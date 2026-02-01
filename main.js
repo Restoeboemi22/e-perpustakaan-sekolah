@@ -62,6 +62,7 @@ document.getElementById('addTaskForm').addEventListener('submit', async (e) => {
         description: document.getElementById('description').value,
         points: parseInt(document.getElementById('points').value) || 75,
         durationMinutes: parseInt(document.getElementById('duration').value) || 60,
+        deadline: document.getElementById('deadline').value,
         createdAt: Date.now(),
         isActive: true
     };
