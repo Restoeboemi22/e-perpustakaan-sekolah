@@ -4,48 +4,11 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TEST LOADING - E-Perpustakaan</title>
+    <title>E-Perpustakaan Sekolah</title>
     <script type="module" crossorigin src="/assets/index-xrVAwBp2-v3.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-DK-ZNvBr.css">
-    <style>
-       #debug-loader {
-         position: fixed;
-         top: 0;
-         left: 0;
-         width: 100%;
-         background: yellow;
-         color: black;
-         padding: 10px;
-         z-index: 9999;
-         font-family: monospace;
-         border-bottom: 2px solid red;
-       }
-       #error-log {
-         color: red;
-         white-space: pre-wrap;
-       }
-     </style>
-     <script>
-       window.onerror = function(msg, url, lineNo, columnNo, error) {
-         var container = document.getElementById('debug-loader');
-         if (!container) return;
-         container.innerHTML += '<br><strong>ERROR:</strong> ' + msg + 
-           '<br>URL: ' + url + 
-           '<br>Line: ' + lineNo;
-         return false;
-       };
-       window.addEventListener('unhandledrejection', function(event) {
-         var container = document.getElementById('debug-loader');
-         if (!container) return;
-         container.innerHTML += '<br><strong>PROMISE ERROR:</strong> ' + event.reason;
-       });
-     </script>
-   </head>
-   <body>
-     <div id="debug-loader">
-       SYSTEM LOADING...<br>
-       <small>Jika halaman ini tidak hilang dalam 5 detik, berarti ada error.</small>
-     </div>
-     <div id="root"></div>
+  </head>
+  <body>
+    <div id="root"></div>
   </body>
 </html>
