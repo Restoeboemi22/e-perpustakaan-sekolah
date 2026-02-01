@@ -6,7 +6,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         literasi: resolve(__dirname, 'kelola_literasi.html'),
-        siswa: resolve(__dirname, 'public/literasi_siswa.html'),
+        siswa: resolve(__dirname, 'literacy_siswa.html'),
       },
     },
   },
