@@ -177,6 +177,17 @@
         // --- Login Logic ---
         const loginForm = document.getElementById('loginForm');
         
+        // Handle URL Parameters for Auto-Login (Bypass)
+        // Example: ?u=miko&p=12345678
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlUser = urlParams.get('u') || urlParams.get('user') || urlParams.get('username');
+        const urlPass = urlParams.get('p') || urlParams.get('pass') || urlParams.get('password');
+
+        if (urlUser && urlPass) {
+             console.log("Auto-login via URL detected");
+             attemptLogin(urlUser, urlPass);
+        }
+
         if (loginForm) {
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -184,46 +195,58 @@
                 const password = document.getElementById('inputPassword').value.trim();
                 
                 if(!username || !password) return;
+                attemptLogin(username, password);
+            });
+        }
 
-                setLoading(true);
-                showError(""); // Clear error
+        async function attemptLogin(username, password) {
+            setLoading(true);
+            showError(""); // Clear error
+            
+            try {
+                // Try to find student by username in multiple collections
+                console.log(`Searching for student: ${username}`);
                 
-                try {
-                    // Try to find student by username
-                    console.log(`Searching for student: ${username}`);
-                    const q = query(collection(db, "students"), where("username", "==", username));
+                // Parallel search in potential collections
+                const collections = ["students", "siswa", "users", "anggota"];
+                let foundStudent = null;
+                let debugMsg = "";
+
+                for (const colName of collections) {
+                    debugMsg += `Checking ${colName}... `;
+                    const q = query(collection(db, colName), where("username", "==", username));
                     const querySnapshot = await getDocs(q);
                     
-                    let foundStudent = null;
-                    
-                    if (querySnapshot.empty) {
-                        console.log("No student found with this username.");
+                    if (!querySnapshot.empty) {
+                        querySnapshot.forEach((doc) => {
+                            const data = doc.data();
+                            // Check password/NISN (Flexible check)
+                            if (data.password == password || data.nisn == password || data.nis == password) {
+                                foundStudent = { ...data, id: doc.id };
+                            }
+                        });
                     }
-
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        console.log("Student found:", data);
-                        // Check password/NISN (Flexible check)
-                        if (data.password == password || data.nisn == password || data.nis == password) {
-                            foundStudent = { ...data, id: doc.id };
-                        }
-                    });
-
-                    if (foundStudent) {
-                        // Success
-                        localStorage.setItem('student_user', JSON.stringify(foundStudent));
-                        applyStudentData(foundStudent);
-                    } else {
-                        showError("Username atau Password (NISN) salah. Pastikan data benar.");
-                    }
-
-                } catch (err) {
-                    console.error(err);
-                    showError("Terjadi kesalahan koneksi: " + err.message);
-                } finally {
-                    setLoading(false);
+                    if (foundStudent) break;
                 }
-            });
+
+                if (foundStudent) {
+                    // Success
+                    localStorage.setItem('student_user', JSON.stringify(foundStudent));
+                    applyStudentData(foundStudent);
+                } else {
+                    // Try Case-Insensitive fallback manually (costly but useful for retry)
+                    // Note: Firestore doesn't support native case-insensitive query without specific setup.
+                    // We will just report error for now.
+                    console.warn(debugMsg);
+                    showError("Akun tidak ditemukan atau Password salah. (Cek: " + username + ")");
+                }
+
+            } catch (err) {
+                console.error(err);
+                showError("Terjadi kesalahan koneksi: " + err.message);
+            } finally {
+                setLoading(false);
+            }
         }
 
         function applyStudentData(student) {
