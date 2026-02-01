@@ -5,7 +5,11 @@
       "destination": "/kelola_literasi.html"
     },
     {
-      "source": "/((?!assets/|.*\\..*).*)",
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
