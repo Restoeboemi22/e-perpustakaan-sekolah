@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/login",
+      "destination": "/literacy_siswa.html"
+    },
+    {
       "source": "/assets/(.*)",
       "destination": "/assets/$1"
     },
