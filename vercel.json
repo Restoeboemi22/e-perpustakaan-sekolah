@@ -1,27 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/kelola_literasi.html",
-      "destination": "/kelola_literasi.html"
-    },
-    {
-      "source": "/admin/(.*)",
-      "destination": "/kelola_literasi.html"
-    },
-    {
       "source": "/assets/(.*)",
       "destination": "/assets/$1"
     },
     {
       "source": "/(.*)",
       "destination": "/index.html"
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/admin/literacy",
-      "destination": "/kelola_literasi.html",
-      "permanent": false
     }
   ]
 }
