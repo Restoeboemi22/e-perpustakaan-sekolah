@@ -1,10 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getDatabase, ref, push, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
   authDomain: "eperpus-sekolah.firebaseapp.com",
+  databaseURL: "https://smpn3pacet-app-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "eperpus-sekolah",
   storageBucket: "eperpus-sekolah.firebasestorage.app",
   messagingSenderId: "303647816343",
@@ -281,7 +283,7 @@ window.resetDeviceLock = async () => {
     // Placeholder
 };
 
-// --- 3. LITERACY SUBMISSION PATCH ---
+// --- 3. LITERACY SUBMISSION PATCH (Dual Write: Firestore + Realtime DB) ---
 window.submitLiteracyReport = async (formData, taskData) => {
     console.log("[Literacy] Submitting report...", formData, taskData);
     const user = auth.currentUser;
@@ -291,18 +293,49 @@ window.submitLiteracyReport = async (formData, taskData) => {
     }
 
     try {
-        // Get Student Data for Class info
+        // Get Student Data
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
         let studentClass = "Unknown";
         let studentName = user.displayName || "Siswa";
+        let studentNis = "Unknown";
+        let studentData = {};
 
         if (userSnap.exists()) {
-            const data = userSnap.data();
-            studentClass = data.class || "Unknown";
-            studentName = data.name || data.username || studentName;
+            studentData = userSnap.data();
+            studentClass = studentData.class || "Unknown";
+            studentName = studentData.name || studentData.username || studentName;
+            studentNis = studentData.nis || "Unknown";
         }
 
+        const timestamp = Date.now();
+
+        // 1. Save to Realtime Database (For Teacher App)
+        const rtdb = getDatabase(app);
+        const logsRef = ref(rtdb, 'literacy_logs');
+        const newLogRef = push(logsRef);
+        const rtdbData = {
+            androidId: timestamp,
+            studentId: 0, // Let Android app resolve ID via username/name
+            studentUsername: user.displayName || user.email, // Key for lookup
+            studentFullName: studentName,
+            studentNisNip: studentNis,
+            bookTitle: formData.bookTitle,
+            author: formData.author,
+            summary: formData.summary,
+            readingDuration: formData.duration.toString(),
+            submissionDate: timestamp,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+            status: "PENDING", // Enum expected by Android
+            grade: null,
+            feedback: null,
+            teacherId: null
+        };
+        await set(newLogRef, rtdbData);
+        console.log("[Literacy] Report sent to Realtime DB!", rtdbData);
+
+        // 2. Save to Firestore 'reports' (For Web Admin Backup)
         const report = {
             taskId: taskData ? taskData.id : "weekly_challenge",
             taskTitle: taskData ? taskData.title : "Tantangan Literasi",
@@ -314,13 +347,12 @@ window.submitLiteracyReport = async (formData, taskData) => {
             studentName: studentName,
             class: studentClass,
             createdAt: new Date().toISOString(),
-            status: "submitted",
-            points: taskData ? (taskData.points || 50) : 50
+            status: "pending", // Lowercase for web admin
+            points: taskData ? (taskData.points || 50) : 50,
+            firebaseKey: newLogRef.key // Link to RTDB
         };
 
-        // Save to 'reports' collection
         await addDoc(collection(db, "reports"), report);
-        
         console.log("[Literacy] Report saved to Firestore!", report);
 
     } catch (e) {

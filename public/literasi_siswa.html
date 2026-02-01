@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas Literasi Siswa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .task-card { transition: transform 0.2s; cursor: pointer; }
+        .task-card:hover { transform: translateY(-5px); border-color: #0d6efd; }
+        .selected-task { border: 2px solid #0d6efd; background-color: #e7f1ff; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">📚 E-Perpustakaan: Literasi</a>
+            <span class="navbar-text text-white" id="userDisplay">Halo, Siswa</span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- 1. Identitas Siswa (Jika belum login/auto-detect) -->
+        <div class="card mb-4 shadow-sm" id="identityCard">
+            <div class="card-header bg-white fw-bold">
+                <i class="bi bi-person-circle"></i> Data Siswa
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nama Lengkap</label>
+                        <input type="text" id="studentName" class="form-control" placeholder="Masukkan Nama Lengkap">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Kelas</label>
+                        <select id="studentClass" class="form-select">
+                            <option value="">-- Pilih Kelas --</option>
+                            <option value="VII-A">VII-A</option>
+                            <option value="VII-B">VII-B</option>
+                            <option value="VII-C">VII-C</option>
+                            <option value="VII-D">VII-D</option>
+                            <option value="VII-E">VII-E</option>
+                            <option value="VIII-A">VIII-A</option>
+                            <option value="VIII-B">VIII-B</option>
+                            <option value="VIII-C">VIII-C</option>
+                            <option value="VIII-D">VIII-D</option>
+                            <option value="VIII-E">VIII-E</option>
+                            <option value="IX-A">IX-A</option>
+                            <option value="IX-B">IX-B</option>
+                            <option value="IX-C">IX-C</option>
+                            <option value="IX-D">IX-D</option>
+                            <option value="IX-E">IX-E</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Daftar Tugas Aktif -->
+        <div class="mb-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-list-task"></i> Tugas Tersedia</h5>
+            <div id="taskList" class="row">
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Memuat tugas...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Form Pengerjaan (Hidden sampai tugas dipilih) -->
+        <div id="submissionArea" class="card shadow-lg border-primary d-none">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-pencil-square"></i> Kerjakan Tugas: <span id="selectedTaskTitle" class="fw-bold"></span>
+            </div>
+            <div class="card-body">
+                <form id="submissionForm">
+                    <input type="hidden" id="taskId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Judul Buku yang Dibaca</label>
+                        <input type="text" id="bookTitle" class="form-control" required placeholder="Contoh: Laskar Pelangi">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Ringkasan / Hasil Literasi</label>
+                        <textarea id="summary" class="form-control" rows="5" required placeholder="Tuliskan ringkasan dari apa yang kamu baca..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold">
+                        <i class="bi bi-send-fill"></i> Kirim Laporan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifikasi -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <strong class="me-auto">Berhasil</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body bg-white">
+                Laporan berhasil dikirim ke Guru!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi Database (Sama dengan test_write_rtdb.html)
+        const DB_URL = "https://smpn3pacet-app-default-rtdb.asia-southeast1.firebasedatabase.app";
+        
+        // --- 1. Load Tasks (Read from RTDB) ---
+        async function loadTasks() {
+            try {
+                const resp = await fetch(`${DB_URL}/literacy_tasks.json`);
+                const data = await resp.json();
+                
+                const container = document.getElementById('taskList');
+                container.innerHTML = '';
+
+                if (!data) {
+                    container.innerHTML = '<div class="col-12 text-center text-muted">Belum ada tugas aktif.</div>';
+                    return;
+                }
+
+                Object.keys(data).forEach(key => {
+                    const task = data[key];
+                    if (task.isActive === false) return; // Skip non-active
+
+                    const col = document.createElement('div');
+                    col.className = 'col-md-6 mb-3';
+                    col.innerHTML = `
+                        <div class="card task-card h-100" onclick="selectTask('${key}', '${task.title}')" id="card-${key}">
+                            <div class="card-body">
+                                <h6 class="card-title fw-bold text-primary">${task.title}</h6>
+                                <p class="card-text small text-muted">${task.description}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-star"></i> ${task.points} Poin</span>
+                                    <small class="text-secondary"><i class="bi bi-clock"></i> ${task.durationMinutes} Menit</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(col);
+                });
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('taskList').innerHTML = `<div class="alert alert-danger">Gagal memuat tugas: ${e.message}</div>`;
+            }
+        }
+
+        // --- 2. UI Interaction ---
+        window.selectTask = (id, title) => {
+            // Reset selection visuals
+            document.querySelectorAll('.task-card').forEach(el => el.classList.remove('selected-task'));
+            const card = document.getElementById(`card-${id}`);
+            if(card) card.classList.add('selected-task');
+
+            // Show form
+            document.getElementById('taskId').value = id;
+            document.getElementById('selectedTaskTitle').innerText = title;
+            document.getElementById('submissionArea').classList.remove('d-none');
+            
+            // Scroll to form
+            document.getElementById('submissionArea').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        // --- 3. Submit Logic (Write to RTDB via REST) ---
+        document.getElementById('submissionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validate Identity
+            const name = document.getElementById('studentName').value.trim();
+            const kelas = document.getElementById('studentClass').value;
+            
+            if (!name || !kelas) {
+                alert("Mohon lengkapi Nama dan Kelas terlebih dahulu!");
+                document.getElementById('identityCard').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('button');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Mengirim...';
+
+            const payload = {
+                taskId: document.getElementById('taskId').value,
+                taskTitle: document.getElementById('selectedTaskTitle').innerText,
+                // Kirim berbagai variasi field nama untuk kompatibilitas Aplikasi Guru
+                studentName: name,
+                name: name,
+                userName: name,
+                displayName: name,
+                sender: name,
+                
+                class: kelas,
+                kelas: kelas, // Variasi field kelas
+                
+                bookTitle: document.getElementById('bookTitle').value,
+                summary: document.getElementById('summary').value,
+                timestamp: Date.now(),
+                date: new Date().toLocaleString('id-ID'),
+                status: 'submitted'
+            };
+
+            try {
+                // Post to 'literacy_logs' (Target Teacher App)
+                const resp = await fetch(`${DB_URL}/literacy_logs.json`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (resp.ok) {
+                    // Show Success Toast
+                    const toastEl = document.getElementById('liveToast');
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+
+                    // Reset Form
+                    document.getElementById('submissionForm').reset();
+                    document.getElementById('submissionArea').classList.add('d-none');
+                    document.querySelectorAll('.task-card').forEach(el => el.classList.remove('selected-task'));
+                    
+                    // Scroll top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                    alert("✅ TUGAS BERHASIL DIKIRIM!\nData sudah masuk ke sistem Guru.");
+                } else {
+                    throw new Error(`Server responded with ${resp.status}`);
+                }
+
+            } catch (err) {
+                alert("❌ Gagal mengirim: " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send-fill"></i> Kirim Laporan';
+            }
+        });
+
+        // Initialize
+        loadTasks();
+
+        // Check Auth Guard (Optional: Pre-fill name if available in localStorage from main app)
+        // const storedUser = localStorage.getItem('user_data'); ...
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
