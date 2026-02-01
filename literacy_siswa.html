@@ -512,9 +512,12 @@
                 // 1. Fiksi: Kategori > Sub > Detail (Ambil Sub)
                 // 2. Lainnya: Kategori > Sub (Ambil Sub)
                 let displayCategory = category;
+                let fullCategory = category; // Simpan kategori lengkap untuk tooltip
+                
+                // Gunakan Regex untuk split yang lebih aman (menangani spasi di sekitar >)
                 if (category.includes('>')) {
-                    const parts = category.split('>');
-                    // Ambil bagian kedua (index 1) sebagai Sub-Kategori yang lebih spesifik
+                    const parts = category.split(/\s*>\s*/);
+                    // Ambil bagian kedua (index 1) sebagai Sub-Kategori
                     if (parts.length >= 2) {
                         displayCategory = parts[1].trim();
                     } else {
@@ -532,7 +535,10 @@
                             <span class="position-absolute top-0 end-0 badge bg-primary m-2 shadow-sm" style="font-size: 10px;">${displayCategory}</span>
                         </div>
                         <div class="card-body p-2">
-                            <h6 class="card-title small fw-bold mb-1 text-truncate">${title}</h6>
+                            <h6 class="card-title small fw-bold mb-1 text-truncate" title="${title}">${title}</h6>
+                            <div class="d-flex align-items-center mb-1">
+                                <span class="badge bg-light text-secondary border px-1" style="font-size: 9px;" title="${fullCategory}">${displayCategory}</span>
+                            </div>
                             <small class="text-muted d-block mb-2 text-truncate">${author}</small>
                             <button class="btn btn-outline-primary btn-sm w-100 py-0" style="font-size: 12px;">Lihat Detail</button>
                         </div>
