@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    {
+      "source": "/kelola_literasi.html",
+      "destination": "/kelola_literasi.html"
+    },
+    {
+      "source": "/((?!assets/|.*\\..*).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/admin/literacy",
+      "destination": "/kelola_literasi.html",
+      "permanent": false
+    }
+  ]
+}
