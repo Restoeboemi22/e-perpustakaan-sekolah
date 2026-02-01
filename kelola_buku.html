@@ -63,6 +63,11 @@
                                 </select>
                                 <div class="form-text">Format: KATEGORI UTAMA > Sub Kategori</div>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary">Detail Kategori (Opsional)</label>
+                                <input type="text" id="categoryDetail" class="form-control" placeholder="Contoh: Novel Inspiratif / Teenlit">
+                                <div class="form-text">Contoh: "Novel Remaja (Teenlit)"</div>
+                            </div>
                             <div class="row">
                                 <div class="col-6 mb-3">
                                     <label class="form-label small fw-bold text-secondary">Tahun</label>
@@ -78,12 +83,14 @@
                                 <textarea id="description" class="form-control" rows="3" placeholder="Sinopsis singkat..."></textarea>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">URL Cover Gambar</label>
-                                <input type="url" id="coverUrl" class="form-control" placeholder="https://example.com/image.jpg">
+                                <label class="form-label small fw-bold text-secondary">Cover Buku</label>
+                                <input type="file" id="coverFile" class="form-control" accept="image/*">
+                                <input type="url" id="coverUrl" class="form-control mt-2" placeholder="Atau masukkan URL Cover Gambar">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">URL File PDF (E-Book)</label>
-                                <input type="url" id="pdfUrl" class="form-control" placeholder="https://example.com/book.pdf">
+                                <label class="form-label small fw-bold text-secondary">File PDF (E-Book)</label>
+                                <input type="file" id="pdfFile" class="form-control" accept="application/pdf">
+                                <input type="url" id="pdfUrl" class="form-control mt-2" placeholder="Atau masukkan URL File PDF">
                             </div>
                             <button type="submit" class="btn btn-primary w-100">
                                 <span id="btnText">Simpan Buku</span>
@@ -138,6 +145,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
@@ -150,6 +158,15 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // Upload Helper
+        async function uploadFile(file, folder) {
+            if (!file) return null;
+            const storageRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
+            await uploadBytes(storageRef, file);
+            return await getDownloadURL(storageRef);
+        }
 
         // Load Books
         window.loadBooks = async function() {
@@ -213,15 +230,41 @@
             btnText.textContent = 'Menyimpan...';
 
             try {
+                // Upload Files
+                const coverFile = document.getElementById('coverFile').files[0];
+                const pdfFile = document.getElementById('pdfFile').files[0];
+                
+                let coverUrl = document.getElementById('coverUrl').value;
+                let pdfUrl = document.getElementById('pdfUrl').value;
+
+                if (coverFile) {
+                    btnText.textContent = 'Mengupload Cover...';
+                    coverUrl = await uploadFile(coverFile, 'book_covers');
+                }
+
+                if (pdfFile) {
+                    btnText.textContent = 'Mengupload PDF...';
+                    pdfUrl = await uploadFile(pdfFile, 'book_pdfs');
+                }
+
+                btnText.textContent = 'Menyimpan Data...';
+
+                // Handle Category Detail
+                let category = document.getElementById('category').value;
+                const detail = document.getElementById('categoryDetail').value.trim();
+                if (detail) {
+                    category += ` > ${detail}`;
+                }
+
                 const bookData = {
                     title: document.getElementById('title').value,
                     author: document.getElementById('author').value,
-                    category: document.getElementById('category').value,
+                    category: category,
                     year: parseInt(document.getElementById('year').value) || new Date().getFullYear(),
                     stock: parseInt(document.getElementById('stock').value) || 0,
                     description: document.getElementById('description').value,
-                    coverUrl: document.getElementById('coverUrl').value,
-                    pdfUrl: document.getElementById('pdfUrl').value,
+                    coverUrl: coverUrl,
+                    pdfUrl: pdfUrl,
                     createdAt: serverTimestamp()
                 };
 
