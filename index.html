@@ -8,35 +8,25 @@
     <!-- PATCH: Redirect Kelola Literasi to New Admin Page -->
     <script>
       (function() {
-        // 1. Immediate check: If user lands on the broken page, redirect immediately
+        // 1. Immediate check: Only redirect if explicitly on the broken path
         if (window.location.pathname.includes('/admin/literacy')) {
           window.location.href = '/kelola_literasi.html';
         }
 
-        // 2. Persistent check for navigation changes
-        let lastUrl = location.href; 
-        new MutationObserver(() => {
-          const url = location.href;
-          if (url !== lastUrl) {
-            lastUrl = url;
-            if (url.includes('/admin/literacy')) {
-               window.location.href = '/kelola_literasi.html';
-            }
-          }
-        }).observe(document, {subtree: true, childList: true});
-
-        // 3. UI Patch for Menu Links
+        // 2. UI Patch for Menu Links - ONLY targets the specific 'Kelola Literasi' text
         document.addEventListener('DOMContentLoaded', () => {
           const observer = new MutationObserver((mutations) => {
             // Find all elements that might be the menu link
-            const links = document.querySelectorAll('a, div, span, li');
+            // PERBAIKAN: Hanya target elemen yang BENAR-BENAR link menu 'Kelola Literasi'
+            // Jangan target div/span umum yang mungkin berisi teks serupa
+            const links = document.querySelectorAll('a, li'); 
+            
             for (let el of links) {
-              if (el.textContent && el.textContent.includes('Kelola Literasi') && !el.dataset.patched) {
+              // Cek teks persis atau sangat spesifik
+              if (el.textContent && el.textContent.trim() === 'Kelola Literasi' && !el.dataset.patched) {
                 el.dataset.patched = 'true';
-                el.style.border = '2px solid red'; // Visible debug indicator
-                el.title = "Link ini telah diperbaiki (Patched)";
                 
-                // Force redirect on click
+                // Force redirect on click only for this specific element
                 el.addEventListener('click', (e) => {
                   e.preventDefault();
                   e.stopPropagation();
