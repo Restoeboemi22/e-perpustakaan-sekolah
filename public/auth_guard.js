@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
@@ -278,5 +278,53 @@ function removeCustomLogin() {
 
 // Expose reset for Admin
 window.resetDeviceLock = async () => {
-    // ... same as before
+    // Placeholder
+};
+
+// --- 3. LITERACY SUBMISSION PATCH ---
+window.submitLiteracyReport = async (formData, taskData) => {
+    console.log("[Literacy] Submitting report...", formData, taskData);
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Error: Anda harus login untuk mengirim laporan.");
+        return;
+    }
+
+    try {
+        // Get Student Data for Class info
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        let studentClass = "Unknown";
+        let studentName = user.displayName || "Siswa";
+
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+            studentClass = data.class || "Unknown";
+            studentName = data.name || data.username || studentName;
+        }
+
+        const report = {
+            taskId: taskData ? taskData.id : "weekly_challenge",
+            taskTitle: taskData ? taskData.title : "Tantangan Literasi",
+            bookTitle: formData.bookTitle,
+            author: formData.author,
+            summary: formData.summary,
+            duration: formData.duration,
+            studentId: user.uid,
+            studentName: studentName,
+            class: studentClass,
+            createdAt: new Date().toISOString(),
+            status: "submitted",
+            points: taskData ? (taskData.points || 50) : 50
+        };
+
+        // Save to 'reports' collection
+        await addDoc(collection(db, "reports"), report);
+        
+        console.log("[Literacy] Report saved to Firestore!", report);
+
+    } catch (e) {
+        console.error("[Literacy] Submission failed:", e);
+        alert("Gagal menyimpan laporan ke server: " + e.message);
+    }
 };
