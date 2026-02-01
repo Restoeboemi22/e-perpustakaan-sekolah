@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Firestore Reports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded shadow">
+        <h1 class="text-2xl font-bold mb-4">Debug Firestore Reports</h1>
+        <p class="mb-4 text-gray-600">Gunakan alat ini untuk mengubah data laporan secara langsung dan melihat apakah muncul di Aplikasi Guru.</p>
+        
+        <div class="flex gap-4 mb-6">
+            <button onclick="loadReports()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Refresh Data</button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-left">
+                        <th class="p-3 border">Student</th>
+                        <th class="p-3 border">Class</th>
+                        <th class="p-3 border">Status</th>
+                        <th class="p-3 border">Title</th>
+                        <th class="p-3 border">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTable">
+                    <tr><td colspan="5" class="p-4 text-center">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
+            authDomain: "eperpus-sekolah.firebaseapp.com",
+            projectId: "eperpus-sekolah",
+            storageBucket: "eperpus-sekolah.firebasestorage.app",
+            messagingSenderId: "303647816343",
+            appId: "1:303647816343:web:78ad36d2d1be25930547d2"
+        };
+
+        const app = initializeApp(firebaseConfig, "DebugApp");
+        const db = getFirestore(app);
+
+        window.loadReports = async () => {
+            const table = document.getElementById('reportTable');
+            table.innerHTML = '<tr><td colspan="5" class="p-4 text-center">Loading...</td></tr>';
+            
+            try {
+                const q = query(collection(db, "reports"), orderBy("createdAt", "desc"), limit(20));
+                const snap = await getDocs(q);
+                
+                let html = '';
+                snap.forEach(d => {
+                    const data = d.data();
+                    html += `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">
+                                <div class="font-bold">${data.studentName || '-'}</div>
+                                <div class="text-xs text-gray-500">${d.id}</div>
+                            </td>
+                            <td class="p-3">
+                                <input type="text" id="class-${d.id}" value="${data.class || ''}" 
+                                    class="border p-1 w-20 rounded text-sm font-mono">
+                                <button onclick="updateField('${d.id}', 'class')" class="ml-2 text-blue-500 text-xs underline">Save</button>
+                            </td>
+                            <td class="p-3">
+                                <input type="text" id="status-${d.id}" value="${data.status || ''}" 
+                                    class="border p-1 w-24 rounded text-sm font-mono">
+                                <button onclick="updateField('${d.id}', 'status')" class="ml-2 text-blue-500 text-xs underline">Save</button>
+                            </td>
+                            <td class="p-3 text-sm">${data.bookTitle || '-'}</td>
+                            <td class="p-3 text-sm">
+                                <button onclick="tryFix('${d.id}')" class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">
+                                    Try "7A" & "pending"
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                table.innerHTML = html || '<tr><td colspan="5" class="p-4 text-center">No reports found</td></tr>';
+            } catch (e) {
+                table.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Error: ${e.message}</td></tr>`;
+            }
+        };
+
+        window.updateField = async (id, field) => {
+            const val = document.getElementById(`${field}-${id}`).value;
+            if(!confirm(`Update ${field} to "${val}"?`)) return;
+            
+            try {
+                await updateDoc(doc(db, "reports", id), { [field]: val });
+                alert("Updated!");
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        };
+
+        window.tryFix = async (id) => {
+            // Helper to quickly convert to Old Format + Pending
+            const currentClass = document.getElementById(`class-${id}`).value;
+            let newClass = currentClass;
+            
+            // Map Roman to Arabic
+            if(currentClass.includes("VII")) newClass = currentClass.replace("VII", "7").replace("-", "");
+            if(currentClass.includes("VIII")) newClass = currentClass.replace("VIII", "8").replace("-", "");
+            if(currentClass.includes("IX")) newClass = currentClass.replace("IX", "9").replace("-", "");
+            
+            // Remove dash if exists (e.g. 7-A -> 7A)
+            newClass = newClass.replace("-", "");
+
+            if(!confirm(`Set Class="${newClass}" and Status="pending"?`)) return;
+
+            try {
+                await updateDoc(doc(db, "reports", id), { 
+                    class: newClass,
+                    status: 'pending' 
+                });
+                document.getElementById(`class-${id}`).value = newClass;
+                document.getElementById(`status-${id}`).value = 'pending';
+                alert("Updated! Cek HP Guru sekarang.");
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        };
+
+        loadReports();
+    </script>
+</body>
+</html>

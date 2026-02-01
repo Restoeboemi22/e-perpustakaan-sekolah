@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Guru Dashboard</title>
+</head>
+<body style="font-family: monospace; padding: 2rem; background: #fffbe6;">
+    <h1>System Diagnosis: Teacher Dashboard & Submission</h1>
+    <div id="output" style="background: #1e1e1e; color: #ffa500; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; min-height: 200px;">Initializing Test...</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
+            authDomain: "eperpus-sekolah.firebaseapp.com",
+            projectId: "eperpus-sekolah",
+            storageBucket: "eperpus-sekolah.firebasestorage.app",
+            messagingSenderId: "303647816343",
+            appId: "1:303647816343:web:78ad36d2d1be25930547d2"
+        };
+
+        const app = initializeApp(firebaseConfig, "TestTeacherApp");
+        const db = getFirestore(app);
+        const output = document.getElementById('output');
+
+        function log(msg) {
+            output.textContent += msg + "\n";
+            console.log(msg);
+        }
+
+        async function runTest() {
+            log("--- DIAGNOSIS ALUR LAPORAN GURU ---\n");
+            
+            // 1. SIMULATE SUBMISSION
+            // Note: From static analysis, the current 'submit' button in minified JS seems to ONLY alert() and not save to DB.
+            // We need to verify if there is ANY collection storing reports.
+            // I'll try to guess 'literacy_reports' or 'submissions'.
+            
+            log("1. MENGECEK KOLEKSI DATABASE...");
+            const collectionsToCheck = ["literacy_reports", "literacy_submissions", "submissions", "reports"];
+            
+            let foundCollection = null;
+
+            for (const colName of collectionsToCheck) {
+                try {
+                    const q = query(collection(db, colName), where("createdAt", ">", "2024-01-01"));
+                    const snap = await getDocs(q); // Just try to fetch
+                    log(`   Collection '${colName}': ${snap.size} documents found.`);
+                    if (snap.size >= 0) { // If query works (even if empty)
+                        foundCollection = colName;
+                        // break; // Don't break, verify all
+                    }
+                } catch (e) {
+                    log(`   Collection '${colName}': Error/Not accessible.`);
+                }
+            }
+
+            if (!foundCollection) {
+                log("\n❌ BAHAYA: Tidak ditemukan koleksi penyimpanan laporan di Database!");
+                log("   Analisis kode menunjukkan tombol 'Kirim Laporan' hanya menampilkan Alert tanpa menyimpan data.");
+                log("   Ini berarti Guru TIDAK AKAN melihat laporan siswa.");
+                return;
+            }
+
+            log(`\n✅ Koleksi aktif terdeteksi: ${foundCollection}`);
+
+            // 2. SIMULATE SUBMISSION WITH ROMAN NUMERALS
+            log("\n2. SIMULASI KIRIM TUGAS (Siswa VII-A)...");
+            const mockSubmission = {
+                studentName: "Siswa Test",
+                class: "VII-A", // ROMAN NUMERAL
+                bookTitle: "Buku Test",
+                summary: "Ini ringkasan test.",
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                const docRef = await addDoc(collection(db, foundCollection), mockSubmission);
+                log(`   [SUKSES] Laporan terkirim ke '${foundCollection}'! ID: ${docRef.id}`);
+
+                // 3. VERIFY TEACHER QUERY
+                log("\n3. SIMULASI VIEW GURU (Filter Kelas VII-A)...");
+                // Check if we can find it by class
+                const qTeacher = query(collection(db, foundCollection), where("class", "==", "VII-A"));
+                const snapTeacher = await getDocs(qTeacher);
+                
+                if (!snapTeacher.empty) {
+                     log(`   [SUKSES] Guru melihat ${snapTeacher.size} laporan dari kelas VII-A.`);
+                     log("   Data filter kelas BERFUNGSI.");
+                } else {
+                     log("   [GAGAL] Guru tidak menemukan laporan VII-A.");
+                     log("   Mungkin field 'class' berbeda atau case-sensitive.");
+                }
+
+            } catch (e) {
+                log("ERROR: " + e.message);
+            }
+        }
+
+        runTest();
+    </script>
+</body>
+</html>

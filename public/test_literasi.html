@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Literasi Runner</title>
+</head>
+<body style="font-family: monospace; padding: 2rem; background: #f0f0f0;">
+    <h1>System Diagnosis: Literacy Task Flow</h1>
+    <div id="output" style="background: #1e1e1e; color: #00ff00; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; min-height: 200px;">Initializing Test...</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
+            authDomain: "eperpus-sekolah.firebaseapp.com",
+            projectId: "eperpus-sekolah",
+            storageBucket: "eperpus-sekolah.firebasestorage.app",
+            messagingSenderId: "303647816343",
+            appId: "1:303647816343:web:78ad36d2d1be25930547d2"
+        };
+
+        const app = initializeApp(firebaseConfig, "TestLiteracyApp");
+        const db = getFirestore(app);
+        const output = document.getElementById('output');
+
+        function log(msg) {
+            output.textContent += msg + "\n";
+            console.log(msg);
+        }
+
+        async function runTest() {
+            log("--- MULAI DIAGNOSIS TUGAS LITERASI ---\n");
+            
+            // 1. CREATE TASK (Simulasi Admin)
+            log("1. MEMBUAT TUGAS BARU (Simulasi Admin)...");
+            const newTask = {
+                title: "Tugas Uji Coba " + new Date().toLocaleTimeString(),
+                description: "Silakan baca buku favoritmu selama 15 menit dan tulis ringkasannya.",
+                points: 50,
+                deadline: new Date(Date.now() + 86400000).toISOString(), // Besok
+                createdAt: new Date().toISOString(),
+                status: "active",
+                submissions: 0
+            };
+
+            try {
+                // Non-aktifkan tugas lama
+                log("   Mencari tugas aktif lama...");
+                const q = query(collection(db, "literacy_tasks"), where("status", "==", "active"));
+                const snapshot = await getDocs(q);
+                log(`   Ditemukan ${snapshot.size} tugas aktif. Mengarsipkan...`);
+                
+                for(const d of snapshot.docs) {
+                    await updateDoc(doc(db, "literacy_tasks", d.id), { status: "archived" });
+                }
+                
+                // Buat tugas baru
+                const docRef = await addDoc(collection(db, "literacy_tasks"), newTask);
+                log(`   [SUKSES] Tugas Baru dibuat! ID: ${docRef.id}`);
+
+                // 2. FETCH TASK (Simulasi Siswa)
+                log("\n2. MENGAMBIL TUGAS (Simulasi Aplikasi Siswa)...");
+                // Logika Siswa: Ambil semua, cari yang 'active'
+                const qStudent = query(collection(db, "literacy_tasks"), orderBy("createdAt", "desc"));
+                const snapStudent = await getDocs(qStudent);
+                
+                const tasks = snapStudent.docs.map(d => ({id: d.id, ...d.data()}));
+                const activeTask = tasks.find(t => t.status === "active");
+
+                if (activeTask && activeTask.id === docRef.id) {
+                    log("   [SUKSES] Tugas ditemukan di sisi Siswa!");
+                    log(`   Judul: ${activeTask.title}`);
+                    log(`   Status: ${activeTask.status}`);
+                    log("\n✅ KESIMPULAN: Jalur pengiriman tugas BERFUNGSI NORMAL.");
+                    log("   Silakan cek HP Siswa, tugas berjudul '" + activeTask.title + "' harusnya muncul.");
+                } else {
+                    log("   [GAGAL] Tugas aktif tidak ditemukan atau tidak cocok.");
+                    log("   Data yang ditemukan: " + JSON.stringify(activeTask));
+                }
+
+            } catch (e) {
+                log("ERROR: " + e.message);
+                console.error(e);
+            }
+        }
+
+        runTest();
+    </script>
+</body>
+</html>

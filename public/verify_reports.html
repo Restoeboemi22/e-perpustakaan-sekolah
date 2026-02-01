@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Laporan Masuk - Lentera Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Verifikasi Laporan Masuk</h1>
+            <button onclick="window.location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Refresh Data
+            </button>
+        </div>
+
+        <div id="loading" class="text-center py-4">
+            <p class="text-gray-500">Memuat data dari server...</p>
+        </div>
+
+        <div id="error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Waktu</th>
+                        <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Siswa</th>
+                        <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Kelas</th>
+                        <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Buku</th>
+                        <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Ringkasan</th>
+                        <th class="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">Poin</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    <!-- Data will be injected here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="emptyMessage" class="hidden text-center py-8 text-gray-500">
+            Belum ada laporan yang masuk.
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
+            authDomain: "eperpus-sekolah.firebaseapp.com",
+            projectId: "eperpus-sekolah",
+            storageBucket: "eperpus-sekolah.firebasestorage.app",
+            messagingSenderId: "303647816343",
+            appId: "1:303647816343:web:78ad36d2d1be25930547d2"
+        };
+
+        const app = initializeApp(firebaseConfig, "VerifyReportApp");
+        const db = getFirestore(app);
+
+        async function loadReports() {
+            const loadingEl = document.getElementById('loading');
+            const tableBody = document.getElementById('reportTableBody');
+            const emptyMsg = document.getElementById('emptyMessage');
+            const errorEl = document.getElementById('error');
+
+            try {
+                // Query reports, order by createdAt desc
+                const q = query(collection(db, "reports"), orderBy("createdAt", "desc"), limit(20));
+                const querySnapshot = await getDocs(q);
+
+                loadingEl.classList.add('hidden');
+                tableBody.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    emptyMsg.classList.remove('hidden');
+                    return;
+                }
+
+                emptyMsg.classList.add('hidden');
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const date = new Date(data.createdAt).toLocaleString('id-ID');
+                    
+                    const row = `
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-2 px-4 border-b text-sm text-gray-700 whitespace-nowrap">${date}</td>
+                            <td class="py-2 px-4 border-b text-sm font-medium text-gray-900">${data.studentName || 'Anonim'}</td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-600">${data.class || '-'}</td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-800">
+                                <div class="font-semibold">${data.bookTitle}</div>
+                                <div class="text-xs text-gray-500">${data.author} (${data.duration} m)</div>
+                            </td>
+                            <td class="py-2 px-4 border-b text-sm text-gray-600 max-w-xs truncate" title="${data.summary}">${data.summary}</td>
+                            <td class="py-2 px-4 border-b text-sm font-bold text-green-600">+${data.points}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+
+            } catch (err) {
+                console.error("Error fetching reports:", err);
+                loadingEl.classList.add('hidden');
+                errorEl.textContent = "Gagal memuat data: " + err.message;
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        // Auto load on start
+        loadReports();
+    </script>
+</body>
+</html>

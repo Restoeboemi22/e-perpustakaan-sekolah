@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Write RTDB</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-5">
+    <div class="card shadow">
+        <div class="card-header bg-danger text-white">Test Tulis ke Database Guru</div>
+        <div class="card-body">
+            <p>Target: <code>https://smpn3pacet-app-default-rtdb.asia-southeast1.firebasedatabase.app/literacy_logs.json</code></p>
+            <button onclick="tryWrite()" class="btn btn-primary">Coba Kirim Data Test</button>
+            <hr>
+            <pre id="logs" class="bg-dark text-white p-3"></pre>
+        </div>
+    </div>
+
+    <script>
+        const DB_URL = "https://smpn3pacet-app-default-rtdb.asia-southeast1.firebasedatabase.app";
+        
+        function log(msg) {
+            document.getElementById('logs').innerText += msg + "\n";
+        }
+
+        async function tryWrite() {
+            log("Memulai test tulis via REST API...");
+            
+            const testData = {
+                studentName: "Test Admin Trae",
+                bookTitle: "Cek Koneksi",
+                timestamp: Date.now()
+            };
+
+            try {
+                const resp = await fetch(`${DB_URL}/literacy_logs.json`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+
+                log(`Status: ${resp.status} ${resp.statusText}`);
+                
+                if (resp.ok) {
+                    const result = await resp.json();
+                    log("✅ BERHASIL! Data terkirim. ID: " + result.name);
+                    log("Kesimpulan: Database Guru TERBUKA untuk tulis (Public).");
+                } else {
+                    log("❌ GAGAL! Database menolak tulisan.");
+                    if (resp.status === 401) {
+                        log("Penyebab: 401 Unauthorized. Perlu Login/Auth yang sesuai.");
+                    }
+                }
+            } catch (e) {
+                log("❌ ERROR: " + e.message);
+            }
+        }
+    </script>
+</body>
+</html>

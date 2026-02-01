@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspeksi Tugas Literasi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-5xl mx-auto bg-white rounded-lg shadow p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Inspeksi Tugas Literasi</h1>
+        <p class="mb-6 text-gray-600">Alat ini menampilkan semua tugas yang ada di database. Gunakan untuk menonaktifkan tugas lama yang masih 'Active' dan menghalangi tugas baru muncul di HP siswa.</p>
+        
+        <button onclick="window.location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4">
+            Refresh Data
+        </button>
+
+        <div id="loading" class="text-center py-4">Memuat data...</div>
+
+        <table class="min-w-full bg-white border border-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="py-2 px-4 border-b text-left">Judul Tugas</th>
+                    <th class="py-2 px-4 border-b text-left">Status</th>
+                    <th class="py-2 px-4 border-b text-left">Deadline</th>
+                    <th class="py-2 px-4 border-b text-left">Dibuat Pada</th>
+                    <th class="py-2 px-4 border-b text-left">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="taskTable">
+                <!-- Data injected here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getDatabase, ref, get, update, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
+            authDomain: "eperpus-sekolah.firebaseapp.com",
+            databaseURL: "https://smpn3pacet-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "eperpus-sekolah",
+            storageBucket: "eperpus-sekolah.firebasestorage.app",
+            messagingSenderId: "303647816343",
+            appId: "1:303647816343:web:78ad36d2d1be25930547d2"
+        };
+
+        const app = initializeApp(firebaseConfig, "InspectApp");
+        const db = getFirestore(app);
+        const rtdb = getDatabase(app);
+
+        // --- FIRESTORE FUNCTIONS ---
+        window.deactivateTaskFirestore = async (id, title) => {
+            if (confirm(`[Firestore] Matikan tugas: "${title}"?`)) {
+                try {
+                    await updateDoc(doc(db, "literacy_tasks", id), { status: 'inactive' });
+                    alert("Berhasil dinonaktifkan di Firestore!");
+                    location.reload();
+                } catch (e) {
+                    alert("Gagal: " + e.message);
+                }
+            }
+        };
+
+        // --- REALTIME DB FUNCTIONS ---
+        window.deactivateTaskRTDB = async (id, title) => {
+            if (confirm(`[Realtime DB] Matikan tugas: "${title}"?`)) {
+                try {
+                    const updates = {};
+                    updates['/literacy_tasks/' + id + '/isActive'] = false;
+                    await update(ref(rtdb), updates);
+                    alert("Berhasil dinonaktifkan di Realtime DB (Android)!");
+                    location.reload();
+                } catch (e) {
+                    alert("Gagal: " + e.message);
+                }
+            }
+        };
+
+        async function loadTasks() {
+            const table = document.getElementById('taskTable');
+            const loading = document.getElementById('loading');
+            table.innerHTML = '';
+            
+            try {
+                // 1. Fetch Firestore (Web Admin)
+                const fsSnap = await getDocs(collection(db, "literacy_tasks"));
+                const fsTasks = fsSnap.docs.map(d => ({
+                    id: d.id, 
+                    source: 'Firestore (Web)',
+                    isActive: d.data().status === 'active',
+                    ...d.data()
+                }));
+
+                // 2. Fetch Realtime DB (Android App)
+                const rtdbSnap = await get(child(ref(rtdb), 'literacy_tasks'));
+                let rtdbTasks = [];
+                if (rtdbSnap.exists()) {
+                    rtdbSnap.forEach(child => {
+                        rtdbTasks.push({
+                            id: child.key,
+                            source: 'Realtime DB (Android)',
+                            isActive: child.child('isActive').val() === true,
+                            title: child.child('title').val(),
+                            createdAt: child.child('createdAt').val(),
+                            points: child.child('points').val()
+                        });
+                    });
+                }
+
+                // Merge & Sort
+                const allTasks = [...fsTasks, ...rtdbTasks].sort((a, b) => {
+                    const dateA = new Date(a.createdAt || 0);
+                    const dateB = new Date(b.createdAt || 0);
+                    return dateB - dateA;
+                });
+
+                loading.style.display = 'none';
+
+                if (allTasks.length === 0) {
+                    table.innerHTML = '<tr><td colspan="6" class="p-4 text-center">Tidak ada data tugas.</td></tr>';
+                    return;
+                }
+
+                allTasks.forEach(t => {
+                    const statusClass = t.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500';
+                    const sourceClass = t.source.includes('Android') ? 'text-purple-600' : 'text-blue-600';
+                    
+                    const row = `
+                        <tr class="hover:bg-gray-50 border-b">
+                            <td class="py-3 px-4">
+                                <span class="text-xs font-bold ${sourceClass}">${t.source}</span>
+                            </td>
+                            <td class="py-3 px-4 font-medium">${t.title || '(Tanpa Judul)'}</td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusClass}">
+                                    ${t.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-sm text-gray-600">${t.createdAt || '-'}</td>
+                            <td class="py-3 px-4">
+                                ${t.isActive ? `
+                                    <button onclick="${t.source.includes('Web') ? 
+                                        `window.deactivateTaskFirestore('${t.id}', '${t.title}')` : 
+                                        `window.deactivateTaskRTDB('${t.id}', '${t.title}')`}" 
+                                            class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                                        Matikan
+                                    </button>
+                                ` : '-'}
+                            </td>
+                        </tr>
+                    `;
+                    table.innerHTML += row;
+                });
+
+            } catch (e) {
+                loading.textContent = "Error: " + e.message;
+                console.error(e);
+            }
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>
