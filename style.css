@@ -1,0 +1,4 @@
+body { padding: 20px; background-color: #f8f9fa; }
+.card { margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8em; }
+.status-active { background-color: #d4edda; color: #155724; }
