@@ -124,8 +124,8 @@
                         <h5 class="mb-0">Halo, <span class="student-name-display">Siswa</span>!</h5>
                         <small class="text-white-50">Selamat datang kembali</small>
                     </div>
-                    <div class="bg-white text-primary rounded-circle p-2">
-                        <span class="fw-bold">S</span>
+                    <div class="bg-white text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <span class="fw-bold student-initial-display">S</span>
                     </div>
                 </div>
                 <div class="row text-center">
@@ -144,13 +144,13 @@
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body">
                     <span class="badge bg-warning text-dark mb-2">Populer</span>
-                    <h5 class="card-title fw-bold">Laskar Jihad</h5>
-                    <p class="card-text small text-muted">Ceritakan 3 tokoh utama dalam buku ini.</p>
+                    <h5 class="card-title fw-bold" id="featured-task-title">Memuat tantangan...</h5>
+                    <p class="card-text small text-muted" id="featured-task-desc">...</p>
                     <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted"><i class="bi bi-clock"></i> Batas: 2026-01-31</small>
-                        <span class="text-warning fw-bold"><i class="bi bi-star-fill"></i> 70 Poin</span>
+                        <small class="text-muted" id="featured-task-deadline"><i class="bi bi-clock"></i> ...</small>
+                        <span class="text-warning fw-bold" id="featured-task-points"><i class="bi bi-star-fill"></i> ...</span>
                     </div>
-                    <button onclick="switchView('tasks')" class="btn btn-primary btn-sm w-100 mt-3">Lihat Tugas</button>
+                    <button id="featured-task-btn" onclick="switchView('tasks')" class="btn btn-primary btn-sm w-100 mt-3">Lihat Tugas</button>
                 </div>
             </div>
         </div>
@@ -158,31 +158,26 @@
         <!-- VIEW: KATALOG -->
         <div id="view-catalog" class="app-view">
             <h5 class="fw-bold mb-3">📚 Katalog Buku</h5>
+            
+            <!-- Category Tabs (Scrollable) -->
+            <div class="d-flex overflow-auto mb-3 pb-2 no-scrollbar" style="white-space: nowrap; -ms-overflow-style: none; scrollbar-width: none;">
+                <button onclick="filterCatalog('all', this)" class="btn btn-sm btn-primary me-2 rounded-pill category-btn active">Semua</button>
+                <button onclick="filterCatalog('FIKSI & SASTRA', this)" class="btn btn-sm btn-outline-secondary me-2 rounded-pill category-btn">Fiksi & Sastra</button>
+                <button onclick="filterCatalog('BUKU PELAJARAN', this)" class="btn btn-sm btn-outline-secondary me-2 rounded-pill category-btn">Buku Pelajaran</button>
+                <button onclick="filterCatalog('REFERENSI', this)" class="btn btn-sm btn-outline-secondary me-2 rounded-pill category-btn">Referensi</button>
+                <button onclick="filterCatalog('LAINNYA', this)" class="btn btn-sm btn-outline-secondary me-2 rounded-pill category-btn">Lainnya</button>
+            </div>
+
             <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Cari judul buku...">
+                <input type="text" id="searchBookInput" class="form-control" placeholder="Cari judul buku..." onkeyup="searchCatalog()">
                 <button class="btn btn-outline-primary" type="button"><i class="bi bi-search"></i></button>
             </div>
-            <!-- Mock Catalog Items -->
-            <div class="row g-3">
-                <div class="col-6">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 150px;">Cover</div>
-                        <div class="card-body p-2">
-                            <h6 class="card-title small fw-bold mb-1">Laskar Pelangi</h6>
-                            <small class="text-muted d-block mb-2">Andrea Hirata</small>
-                            <button class="btn btn-primary btn-sm w-100 py-0">Baca</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 150px;">Cover</div>
-                        <div class="card-body p-2">
-                            <h6 class="card-title small fw-bold mb-1">Bumi Manusia</h6>
-                            <small class="text-muted d-block mb-2">Pramoedya A.T.</small>
-                            <button class="btn btn-primary btn-sm w-100 py-0">Baca</button>
-                        </div>
-                    </div>
+            
+            <!-- Catalog Grid -->
+            <div id="catalogGrid" class="row g-3">
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Memuat buku dari perpustakaan...</p>
                 </div>
             </div>
         </div>
@@ -283,7 +278,7 @@
             <i class="bi bi-grid"></i> Katalog
         </div>
         <div class="nav-item active" onclick="switchView('tasks')" id="nav-tasks">
-            <i class="bi bi-pencil-square"></i> Tugas
+            <i class="bi bi-pen"></i> Tugas Literasi
         </div>
         <div class="nav-item" onclick="switchView('mybooks')" id="nav-mybooks">
             <i class="bi bi-journal-text"></i> Buku Saya
@@ -308,7 +303,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Konfigurasi Database (Firestore)
         const firebaseConfig = {
@@ -383,7 +378,7 @@
 
                 if (foundStudent) {
                     // Success
-                    localStorage.setItem('student_user', JSON.stringify(foundStudent));
+                    sessionStorage.setItem('student_user', JSON.stringify(foundStudent));
                     applyStudentData(foundStudent);
                 } else {
                     // Try Case-Insensitive fallback manually (costly but useful for retry)
@@ -408,6 +403,15 @@
             const displayName = student.name || student.fullName || student.nama_lengkap || student.username;
             document.getElementById('userDisplay').innerText = `Halo, ${displayName}`;
             
+            // Update all elements with class 'student-name-display'
+            const nameElements = document.querySelectorAll('.student-name-display');
+            nameElements.forEach(el => el.innerText = displayName);
+
+            // Update initial
+            const initial = displayName.charAt(0).toUpperCase();
+            const initialElements = document.querySelectorAll('.student-initial-display');
+            initialElements.forEach(el => el.innerText = initial);
+            
             const nameInput = document.getElementById('studentName');
             const classInput = document.getElementById('studentClass');
             
@@ -424,7 +428,154 @@
             
             // Load tasks immediately after login
             loadTasks();
+            loadFeaturedTask();
         }
+
+        async function loadFeaturedTask() {
+            try {
+                // Fetch latest task from Firestore 'literacy_tasks'
+                // Assuming 'createdAt' or just get any document if no proper timestamp
+                const q = query(collection(db, "literacy_tasks"), limit(1));
+                // If you have a createdAt field, use: orderBy("createdAt", "desc"), limit(1)
+                
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    const task = snap.docs[0].data();
+                    document.getElementById('featured-task-title').innerText = task.title || "Tugas Mingguan";
+                    document.getElementById('featured-task-desc').innerText = task.description || "Kerjakan tugas literasi baru ini!";
+                    document.getElementById('featured-task-deadline').innerHTML = `<i class="bi bi-clock"></i> ${task.duration || '60'} Menit`;
+                    document.getElementById('featured-task-points').innerHTML = `<i class="bi bi-star-fill"></i> ${task.points || '10'} Poin`;
+                } else {
+                    document.getElementById('featured-task-title').innerText = "Tidak ada tantangan aktif";
+                    document.getElementById('featured-task-desc').innerText = "Istirahat dulu sejenak.";
+                }
+            } catch (e) {
+                console.error("Error loading featured task:", e);
+            }
+        }
+
+        // --- Catalog Logic ---
+        let allBooks = [];
+        let currentCategory = 'all';
+
+        window.loadCatalog = async function() {
+            const grid = document.getElementById('catalogGrid');
+            if(!grid) return;
+
+            try {
+                // Fetch books from Firestore
+                // Assumes collection name "books" based on admin portal convention
+                const q = query(collection(db, "books")); 
+                const querySnapshot = await getDocs(q);
+                
+                allBooks = [];
+                querySnapshot.forEach((doc) => {
+                    allBooks.push({ id: doc.id, ...doc.data() });
+                });
+
+                // If empty, add some mock data if strictly needed or just show empty state
+                // But for "sync", we prefer real data. If 0 real data, show empty.
+                
+                renderCatalog(allBooks);
+                
+            } catch (e) {
+                console.error("Error loading catalog:", e);
+                grid.innerHTML = `<div class="col-12 text-center text-danger"><p>Gagal memuat katalog: ${e.message}</p></div>`;
+            }
+        }
+
+        window.renderCatalog = function(books) {
+            const grid = document.getElementById('catalogGrid');
+            grid.innerHTML = '';
+
+            if (books.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-5 text-muted">
+                        <i class="bi bi-book display-1"></i>
+                        <p class="mt-3">Tidak ada buku ditemukan.</p>
+                    </div>`;
+                return;
+            }
+
+            books.forEach(book => {
+                // Fallback values
+                const title = book.title || book.judul || "Tanpa Judul";
+                const author = book.author || book.penulis || "Tidak diketahui";
+                const cover = book.coverUrl || book.cover || null;
+                const category = book.category || book.kategori || "Umum";
+
+                const col = document.createElement('div');
+                col.className = 'col-6 col-md-4 col-lg-3';
+                col.innerHTML = `
+                    <div class="card h-100 border-0 shadow-sm task-card" onclick="openBook('${book.id}')">
+                        <div class="position-relative" style="height: 180px; background: #eee; overflow: hidden; border-radius: 10px 10px 0 0;">
+                            ${cover ? `<img src="${cover}" alt="${title}" style="width: 100%; height: 100%; object-fit: cover;">` 
+                                    : `<div class="d-flex align-items-center justify-content-center h-100 text-secondary"><i class="bi bi-book h1"></i></div>`}
+                            <span class="position-absolute top-0 end-0 badge bg-primary m-2 shadow-sm" style="font-size: 10px;">${category}</span>
+                        </div>
+                        <div class="card-body p-2">
+                            <h6 class="card-title small fw-bold mb-1 text-truncate">${title}</h6>
+                            <small class="text-muted d-block mb-2 text-truncate">${author}</small>
+                            <button class="btn btn-outline-primary btn-sm w-100 py-0" style="font-size: 12px;">Lihat Detail</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(col);
+            });
+        }
+
+        window.filterCatalog = function(category, btn) {
+            currentCategory = category;
+            
+            // Update UI buttons
+            document.querySelectorAll('.category-btn').forEach(b => {
+                b.classList.remove('btn-primary', 'active');
+                b.classList.add('btn-outline-secondary');
+            });
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-primary', 'active');
+
+            // Filter logic
+            if (category === 'all') {
+                searchCatalog(); // Re-apply search filter if any
+            } else {
+                const filtered = allBooks.filter(b => {
+                    const cat = (b.category || b.kategori || "").toUpperCase();
+                    // Flexible matching
+                    return cat.includes(category);
+                });
+                renderCatalog(filtered);
+            }
+        }
+
+        window.searchCatalog = function() {
+            const query = document.getElementById('searchBookInput').value.toLowerCase();
+            
+            let filtered = allBooks.filter(b => {
+                const title = (b.title || b.judul || "").toLowerCase();
+                const author = (b.author || b.penulis || "").toLowerCase();
+                return title.includes(query) || author.includes(query);
+            });
+
+            // Apply category filter on top if not 'all'
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(b => {
+                    const cat = (b.category || b.kategori || "").toUpperCase();
+                    return cat.includes(currentCategory);
+                });
+            }
+
+            renderCatalog(filtered);
+        }
+
+        window.openBook = function(bookId) {
+            // Placeholder for book detail or reading view
+            // Can be expanded later
+            alert("Fitur detail buku akan segera hadir! ID: " + bookId);
+        }
+
+        // Call loadCatalog on startup
+        loadCatalog();
 
         function setLoading(isLoading) {
             const btnText = document.getElementById('loginBtnText');
@@ -450,12 +601,12 @@
 
         // Logout function (Optional, for testing)
         window.logoutStudent = () => {
-            localStorage.removeItem('student_user');
+            sessionStorage.removeItem('student_user');
             location.reload();
         };
 
         // Check if already logged in
-        const saved = localStorage.getItem('student_user');
+        const saved = sessionStorage.getItem('student_user');
         if (saved) {
             applyStudentData(JSON.parse(saved));
         }
