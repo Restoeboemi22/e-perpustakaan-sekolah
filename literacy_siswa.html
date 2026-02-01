@@ -8,11 +8,57 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
-        body { background-color: #f8f9fa; }
+        body { 
+            background-color: #f8f9fa; 
+            padding-bottom: 80px; /* Space for bottom navbar */
+        }
         .task-card { transition: transform 0.2s; cursor: pointer; }
         .task-card:hover { transform: translateY(-5px); border-color: #0d6efd; }
         .selected-task { border: 2px solid #0d6efd; background-color: #e7f1ff; }
         
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+        .nav-item {
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+            cursor: pointer;
+            flex: 1;
+        }
+        .nav-item i {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .nav-item.active {
+            color: #0d6efd;
+            font-weight: bold;
+        }
+
+        /* View Sections */
+        .app-view { display: none; }
+        .app-view.active { display: block; }
+        
+        /* Stats Card */
+        .stats-card {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
         /* Login Modal Overlay */
         #loginOverlay {
             position: fixed;
@@ -39,8 +85,8 @@
     <div id="loginOverlay">
         <div class="card login-card p-4">
             <div class="text-center mb-4">
-                <h3 class="fw-bold text-primary">📚 Identitas Siswa</h3>
-                <p class="text-muted small">Masukkan Username dan NISN Anda</p>
+                <h3 class="fw-bold text-primary">📚 Lentera Digital</h3>
+                <p class="text-muted small">Masuk untuk mengakses perpustakaan</p>
             </div>
             <form id="loginForm">
                 <div class="mb-3">
@@ -59,85 +105,191 @@
             </form>
         </div>
     </div>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">📚 E-Perpustakaan: Literasi</a>
-            <span class="navbar-text text-white" id="userDisplay">Halo, Siswa</span>
+
+    <!-- Top Navbar (Only visible on specific views if needed, currently global) -->
+    <nav class="navbar navbar-light bg-white shadow-sm sticky-top">
+        <div class="container-fluid">
+            <span class="navbar-brand fw-bold mb-0 h1"><i class="bi bi-book-half text-primary"></i> Lentera Digital</span>
+            <span class="navbar-text small text-muted" id="userDisplay">Guest</span>
         </div>
     </nav>
 
     <div class="container mt-4">
-        <!-- 1. Identitas Siswa (Jika belum login/auto-detect) -->
-        <div class="card mb-4 shadow-sm" id="identityCard">
-            <div class="card-header bg-white fw-bold">
-                <i class="bi bi-person-circle"></i> Data Siswa
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Nama Lengkap</label>
-                        <input type="text" id="studentName" class="form-control" placeholder="Masukkan Nama Lengkap">
+        
+        <!-- VIEW: BERANDA -->
+        <div id="view-home" class="app-view">
+            <div class="stats-card shadow">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="mb-0">Halo, <span class="student-name-display">Siswa</span>!</h5>
+                        <small class="text-white-50">Selamat datang kembali</small>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Kelas</label>
-                        <select id="studentClass" class="form-select">
-                            <option value="">-- Pilih Kelas --</option>
-                            <option value="VII-A">VII-A</option>
-                            <option value="VII-B">VII-B</option>
-                            <option value="VII-C">VII-C</option>
-                            <option value="VII-D">VII-D</option>
-                            <option value="VII-E">VII-E</option>
-                            <option value="VIII-A">VIII-A</option>
-                            <option value="VIII-B">VIII-B</option>
-                            <option value="VIII-C">VIII-C</option>
-                            <option value="VIII-D">VIII-D</option>
-                            <option value="VIII-E">VIII-E</option>
-                            <option value="IX-A">IX-A</option>
-                            <option value="IX-B">IX-B</option>
-                            <option value="IX-C">IX-C</option>
-                            <option value="IX-D">IX-D</option>
-                            <option value="IX-E">IX-E</option>
-                        </select>
+                    <div class="bg-white text-primary rounded-circle p-2">
+                        <span class="fw-bold">S</span>
+                    </div>
+                </div>
+                <div class="row text-center">
+                    <div class="col-6 border-end border-white-50">
+                        <h3 class="fw-bold mb-0">1,250</h3>
+                        <small>Total Poin</small>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="fw-bold mb-0">12</h3>
+                        <small>Buku Dibaca</small>
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="fw-bold mb-3">Tantangan Minggu Ini</h6>
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <span class="badge bg-warning text-dark mb-2">Populer</span>
+                    <h5 class="card-title fw-bold">Laskar Jihad</h5>
+                    <p class="card-text small text-muted">Ceritakan 3 tokoh utama dalam buku ini.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted"><i class="bi bi-clock"></i> Batas: 2026-01-31</small>
+                        <span class="text-warning fw-bold"><i class="bi bi-star-fill"></i> 70 Poin</span>
+                    </div>
+                    <button onclick="switchView('tasks')" class="btn btn-primary btn-sm w-100 mt-3">Lihat Tugas</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: KATALOG -->
+        <div id="view-catalog" class="app-view">
+            <h5 class="fw-bold mb-3">📚 Katalog Buku</h5>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Cari judul buku...">
+                <button class="btn btn-outline-primary" type="button"><i class="bi bi-search"></i></button>
+            </div>
+            <!-- Mock Catalog Items -->
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 150px;">Cover</div>
+                        <div class="card-body p-2">
+                            <h6 class="card-title small fw-bold mb-1">Laskar Pelangi</h6>
+                            <small class="text-muted d-block mb-2">Andrea Hirata</small>
+                            <button class="btn btn-primary btn-sm w-100 py-0">Baca</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 150px;">Cover</div>
+                        <div class="card-body p-2">
+                            <h6 class="card-title small fw-bold mb-1">Bumi Manusia</h6>
+                            <small class="text-muted d-block mb-2">Pramoedya A.T.</small>
+                            <button class="btn btn-primary btn-sm w-100 py-0">Baca</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 2. Daftar Tugas Aktif -->
-        <div class="mb-4">
-            <h5 class="fw-bold mb-3"><i class="bi bi-list-task"></i> Tugas Tersedia</h5>
-            <div id="taskList" class="row">
-                <div class="col-12 text-center py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-2 text-muted">Memuat tugas...</p>
+        <!-- VIEW: TUGAS (Existing Logic Moved Here) -->
+        <div id="view-tasks" class="app-view active">
+            
+            <!-- Identity Hidden (Handled by Login) -->
+            <div class="d-none">
+                <input type="text" id="studentName">
+                <input type="text" id="studentClass">
+            </div>
+
+            <!-- Daftar Tugas Aktif -->
+            <div class="mb-4">
+                <h5 class="fw-bold mb-3">📝 Tugas Literasi</h5>
+                <div class="btn-group w-100 mb-3" role="group">
+                    <button type="button" class="btn btn-primary active">Tugas Baru</button>
+                    <button type="button" class="btn btn-outline-primary">Riwayat</button>
+                </div>
+                
+                <div id="taskList" class="row">
+                    <div class="col-12 text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2 text-muted">Memuat tugas...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Pengerjaan (Hidden sampai tugas dipilih) -->
+            <div id="submissionArea" class="card shadow-lg border-primary d-none position-fixed bottom-0 start-0 w-100 rounded-top" style="z-index: 2000; height: 80vh; overflow-y: auto;">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-pencil-square"></i> Kerjakan Tugas</span>
+                    <button type="button" class="btn-close btn-close-white" onclick="closeSubmission()"></button>
+                </div>
+                <div class="card-body">
+                    <h6 id="selectedTaskTitle" class="fw-bold mb-3 text-primary"></h6>
+                    <form id="submissionForm">
+                        <input type="hidden" id="taskId">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Judul Buku</label>
+                            <input type="text" id="bookTitle" class="form-control" required placeholder="Buku yang dibaca...">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Ringkasan</label>
+                            <textarea id="summary" class="form-control" rows="8" required placeholder="Tulis ringkasanmu disini..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 py-3 fw-bold mb-5">
+                            <i class="bi bi-send-fill"></i> Kirim Laporan
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
 
-        <!-- 3. Form Pengerjaan (Hidden sampai tugas dipilih) -->
-        <div id="submissionArea" class="card shadow-lg border-primary d-none">
-            <div class="card-header bg-primary text-white">
-                <i class="bi bi-pencil-square"></i> Kerjakan Tugas: <span id="selectedTaskTitle" class="fw-bold"></span>
+        <!-- VIEW: BUKU SAYA -->
+        <div id="view-mybooks" class="app-view">
+            <h5 class="fw-bold mb-3">📖 Buku Saya</h5>
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-journal-bookmark display-1"></i>
+                <p class="mt-3">Belum ada buku yang disimpan.</p>
             </div>
-            <div class="card-body">
-                <form id="submissionForm">
-                    <input type="hidden" id="taskId">
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Judul Buku yang Dibaca</label>
-                        <input type="text" id="bookTitle" class="form-control" required placeholder="Contoh: Laskar Pelangi">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Ringkasan / Hasil Literasi</label>
-                        <textarea id="summary" class="form-control" rows="5" required placeholder="Tuliskan ringkasan dari apa yang kamu baca..."></textarea>
-                    </div>
+        </div>
 
-                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold">
-                        <i class="bi bi-send-fill"></i> Kirim Laporan
+        <!-- VIEW: PROFIL -->
+        <div id="view-profile" class="app-view">
+            <h5 class="fw-bold mb-3">👤 Profil Saya</h5>
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; font-size: 32px;">
+                        S
+                    </div>
+                    <h4 class="fw-bold student-name-display">Nama Siswa</h4>
+                    <p class="text-muted student-class-display">Kelas VII-A</p>
+                    <hr>
+                    <div class="text-start">
+                        <p><strong>NISN:</strong> <span id="profile-nisn">-</span></p>
+                        <p><strong>Sekolah:</strong> SMPN 3 Pacet</p>
+                    </div>
+                    <button onclick="window.logoutStudent()" class="btn btn-outline-danger w-100 mt-3">
+                        <i class="bi bi-box-arrow-right"></i> Keluar
                     </button>
-                </form>
+                </div>
             </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="switchView('home')" id="nav-home">
+            <i class="bi bi-house-door"></i> Beranda
+        </div>
+        <div class="nav-item" onclick="switchView('catalog')" id="nav-catalog">
+            <i class="bi bi-grid"></i> Katalog
+        </div>
+        <div class="nav-item active" onclick="switchView('tasks')" id="nav-tasks">
+            <i class="bi bi-pencil-square"></i> Tugas
+        </div>
+        <div class="nav-item" onclick="switchView('mybooks')" id="nav-mybooks">
+            <i class="bi bi-journal-text"></i> Buku Saya
+        </div>
+        <div class="nav-item" onclick="switchView('profile')" id="nav-profile">
+            <i class="bi bi-person"></i> Profil
         </div>
     </div>
 
@@ -309,6 +461,27 @@
         }
 
         
+        // --- Navigation Logic ---
+        window.switchView = (viewName) => {
+            // Update Active View
+            document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            
+            // Update Navbar State
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`nav-${viewName}`).classList.add('active');
+
+            // Close submission form if open
+            if(viewName !== 'tasks') {
+                closeSubmission();
+            }
+        };
+
+        window.closeSubmission = () => {
+            document.getElementById('submissionArea').classList.add('d-none');
+            // Remove backdrop if we add one later
+        }
+
         // --- 1. Load Tasks (Read from RTDB) ---
         async function loadTasks() {
             try {
@@ -328,16 +501,16 @@
                     if (task.isActive === false) return; // Skip non-active
 
                     const col = document.createElement('div');
-                    col.className = 'col-md-6 mb-3';
+                    col.className = 'col-12 mb-3'; // Full width for mobile list style
                     col.innerHTML = `
-                        <div class="card task-card h-100" onclick="selectTask('${key}', '${task.title}')" id="card-${key}">
+                        <div class="card task-card shadow-sm border-0 h-100" onclick="selectTask('${key}', '${task.title}')" id="card-${key}">
                             <div class="card-body">
-                                <h6 class="card-title fw-bold text-primary">${task.title}</h6>
-                                <p class="card-text small text-muted">${task.description}</p>
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="badge bg-warning text-dark"><i class="bi bi-star"></i> ${task.points} Poin</span>
-                                    <small class="text-secondary"><i class="bi bi-clock"></i> ${task.durationMinutes} Menit</small>
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="card-title fw-bold text-primary mb-1">${task.title}</h6>
+                                    <span class="badge bg-warning text-dark rounded-pill">${task.points} Poin</span>
                                 </div>
+                                <p class="card-text small text-muted mb-2">${task.description}</p>
+                                <small class="text-secondary"><i class="bi bi-clock"></i> ${task.durationMinutes} Menit</small>
                             </div>
                         </div>
                     `;
@@ -352,18 +525,10 @@
 
         // --- 2. UI Interaction ---
         window.selectTask = (id, title) => {
-            // Reset selection visuals
-            document.querySelectorAll('.task-card').forEach(el => el.classList.remove('selected-task'));
-            const card = document.getElementById(`card-${id}`);
-            if(card) card.classList.add('selected-task');
-
             // Show form
             document.getElementById('taskId').value = id;
             document.getElementById('selectedTaskTitle').innerText = title;
             document.getElementById('submissionArea').classList.remove('d-none');
-            
-            // Scroll to form
-            document.getElementById('submissionArea').scrollIntoView({ behavior: 'smooth' });
         };
 
         // --- 3. Submit Logic (Write to RTDB via REST) ---
@@ -375,8 +540,8 @@
             const kelas = document.getElementById('studentClass').value;
             
             if (!name || !kelas) {
-                alert("Mohon lengkapi Nama dan Kelas terlebih dahulu!");
-                document.getElementById('identityCard').scrollIntoView({ behavior: 'smooth' });
+                alert("Sesi kadaluarsa. Silakan login ulang.");
+                location.reload();
                 return;
             }
 
@@ -416,8 +581,8 @@
                 
                 // Reset form
                 e.target.reset();
-                document.getElementById('submissionArea').classList.add('d-none');
-                document.querySelectorAll('.task-card').forEach(el => el.classList.remove('selected-task'));
+                closeSubmission();
+                switchView('home'); // Go back to home after submission? Or stay in tasks?
                 
             } catch (err) {
                 alert("Gagal mengirim laporan: " + err.message);
