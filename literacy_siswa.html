@@ -6,14 +6,59 @@
     <title>Tugas Literasi Siswa</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body { background-color: #f8f9fa; }
         .task-card { transition: transform 0.2s; cursor: pointer; }
         .task-card:hover { transform: translateY(-5px); border-color: #0d6efd; }
         .selected-task { border: 2px solid #0d6efd; background-color: #e7f1ff; }
+        
+        /* Login Modal Overlay */
+        #loginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
+    <!-- Login Overlay -->
+    <div id="loginOverlay">
+        <div class="card login-card p-4">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold text-primary">📚 Identitas Siswa</h3>
+                <p class="text-muted small">Masukkan Username dan NISN Anda</p>
+            </div>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Username</label>
+                    <input type="text" id="inputUsername" class="form-control" placeholder="Contoh: miko" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Password (NISN)</label>
+                    <input type="password" id="inputPassword" class="form-control" placeholder="Masukkan NISN" required>
+                </div>
+                <div id="loginError" class="alert alert-danger d-none small py-2"></div>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                    <span id="loginBtnText">Masuk</span>
+                    <span id="loginSpinner" class="spinner-border spinner-border-sm d-none"></span>
+                </button>
+            </form>
+        </div>
+    </div>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#">📚 E-Perpustakaan: Literasi</a>
@@ -109,9 +154,137 @@
         </div>
     </div>
 
-    <script>
-        // Konfigurasi Database (Sama dengan test_write_rtdb.html)
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Konfigurasi Database (Firestore)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
+            authDomain: "eperpus-sekolah.firebaseapp.com",
+            projectId: "eperpus-sekolah",
+            storageBucket: "eperpus-sekolah.firebasestorage.app",
+            messagingSenderId: "303647816343",
+            appId: "1:303647816343:web:78ad36d2d1be25930547d2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // RTDB URL for submission (Keep existing)
         const DB_URL = "https://smpn3pacet-app-default-rtdb.asia-southeast1.firebasedatabase.app";
+
+        // --- Login Logic ---
+        const loginForm = document.getElementById('loginForm');
+        
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('inputUsername').value.trim();
+                const password = document.getElementById('inputPassword').value.trim();
+                
+                if(!username || !password) return;
+
+                setLoading(true);
+                showError(""); // Clear error
+                
+                try {
+                    // Try to find student by username
+                    console.log(`Searching for student: ${username}`);
+                    const q = query(collection(db, "students"), where("username", "==", username));
+                    const querySnapshot = await getDocs(q);
+                    
+                    let foundStudent = null;
+                    
+                    if (querySnapshot.empty) {
+                        console.log("No student found with this username.");
+                    }
+
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        console.log("Student found:", data);
+                        // Check password/NISN (Flexible check)
+                        if (data.password == password || data.nisn == password || data.nis == password) {
+                            foundStudent = { ...data, id: doc.id };
+                        }
+                    });
+
+                    if (foundStudent) {
+                        // Success
+                        localStorage.setItem('student_user', JSON.stringify(foundStudent));
+                        applyStudentData(foundStudent);
+                    } else {
+                        showError("Username atau Password (NISN) salah. Pastikan data benar.");
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    showError("Terjadi kesalahan koneksi: " + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            });
+        }
+
+        function applyStudentData(student) {
+            const overlay = document.getElementById('loginOverlay');
+            if(overlay) overlay.style.display = 'none';
+            
+            const displayName = student.name || student.fullName || student.nama_lengkap || student.username;
+            document.getElementById('userDisplay').innerText = `Halo, ${displayName}`;
+            
+            const nameInput = document.getElementById('studentName');
+            const classInput = document.getElementById('studentClass');
+            
+            nameInput.value = displayName;
+            
+            // Normalize class format (e.g. "7A" -> "VII-A")
+            let studentClass = student.class || student.kelas || "";
+            // Simple mapping attempt if needed, but let's assume raw data is OK or user corrects it
+            classInput.value = studentClass;
+            
+            // Make readonly to prevent tampering, but allow class change if empty/wrong?
+            // User requested automation, so let's lock it to show "We know who you are".
+            nameInput.readOnly = true;
+            
+            // Load tasks immediately after login
+            loadTasks();
+        }
+
+        function setLoading(isLoading) {
+            const btnText = document.getElementById('loginBtnText');
+            const spinner = document.getElementById('loginSpinner');
+            if (isLoading) {
+                btnText.classList.add('d-none');
+                spinner.classList.remove('d-none');
+            } else {
+                btnText.classList.remove('d-none');
+                spinner.classList.add('d-none');
+            }
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('loginError');
+            if(msg) {
+                el.innerText = msg;
+                el.classList.remove('d-none');
+            } else {
+                el.classList.add('d-none');
+            }
+        }
+
+        // Logout function (Optional, for testing)
+        window.logoutStudent = () => {
+            localStorage.removeItem('student_user');
+            location.reload();
+        };
+
+        // Check if already logged in
+        const saved = localStorage.getItem('student_user');
+        if (saved) {
+            applyStudentData(JSON.parse(saved));
+        }
+
         
         // --- 1. Load Tasks (Read from RTDB) ---
         async function loadTasks() {
@@ -197,57 +370,39 @@
                 userName: name,
                 displayName: name,
                 sender: name,
-                
-                class: kelas,
-                kelas: kelas, // Variasi field kelas
-                
+                class: kelas, // Kirim kelas
+                kelas: kelas,
+                timestamp: Date.now(),
+                submittedAt: new Date().toISOString(),
                 bookTitle: document.getElementById('bookTitle').value,
                 summary: document.getElementById('summary').value,
-                timestamp: Date.now(),
-                date: new Date().toLocaleString('id-ID'),
-                status: 'submitted'
+                status: 'submitted',
+                points: 0 // Pending approval
             };
 
             try {
-                // Post to 'literacy_logs' (Target Teacher App)
-                const resp = await fetch(`${DB_URL}/literacy_logs.json`, {
+                await fetch(`${DB_URL}/literacy_logs.json`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                if (resp.ok) {
-                    // Show Success Toast
-                    const toastEl = document.getElementById('liveToast');
-                    const toast = new bootstrap.Toast(toastEl);
-                    toast.show();
-
-                    // Reset Form
-                    document.getElementById('submissionForm').reset();
-                    document.getElementById('submissionArea').classList.add('d-none');
-                    document.querySelectorAll('.task-card').forEach(el => el.classList.remove('selected-task'));
-                    
-                    // Scroll top
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    
-                    alert("✅ TUGAS BERHASIL DIKIRIM!\nData sudah masuk ke sistem Guru.");
-                } else {
-                    throw new Error(`Server responded with ${resp.status}`);
-                }
-
+                // Show success
+                const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+                toast.show();
+                
+                // Reset form
+                e.target.reset();
+                document.getElementById('submissionArea').classList.add('d-none');
+                document.querySelectorAll('.task-card').forEach(el => el.classList.remove('selected-task'));
+                
             } catch (err) {
-                alert("❌ Gagal mengirim: " + err.message);
+                alert("Gagal mengirim laporan: " + err.message);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="bi bi-send-fill"></i> Kirim Laporan';
             }
         });
-
-        // Initialize
-        loadTasks();
-
-        // Check Auth Guard (Optional: Pre-fill name if available in localStorage from main app)
-        // const storedUser = localStorage.getItem('user_data'); ...
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
