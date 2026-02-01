@@ -506,8 +506,21 @@
                 const author = book.author || book.penulis || "Tidak diketahui";
                 const cover = book.coverUrl || book.cover || null;
                 let category = book.category || book.kategori || "Umum";
-                // Ambil kategori utama saja jika formatnya panjang (misal: "FIKSI > Novel")
-                const displayCategory = category.includes('>') ? category.split('>')[0].trim() : category;
+                
+                // Logika Tampilan Kategori (Ambil Sub-Kategori/Level 2 jika ada)
+                // Aturan Admin: 
+                // 1. Fiksi: Kategori > Sub > Detail (Ambil Sub)
+                // 2. Lainnya: Kategori > Sub (Ambil Sub)
+                let displayCategory = category;
+                if (category.includes('>')) {
+                    const parts = category.split('>');
+                    // Ambil bagian kedua (index 1) sebagai Sub-Kategori yang lebih spesifik
+                    if (parts.length >= 2) {
+                        displayCategory = parts[1].trim();
+                    } else {
+                        displayCategory = parts[0].trim();
+                    }
+                }
 
                 const col = document.createElement('div');
                 col.className = 'col-6 col-md-4 col-lg-3';
@@ -559,7 +572,8 @@
             let filtered = allBooks.filter(b => {
                 const title = (b.title || b.judul || "").toLowerCase();
                 const author = (b.author || b.penulis || "").toLowerCase();
-                return title.includes(query) || author.includes(query);
+                const cat = (b.category || b.kategori || "").toLowerCase();
+                return title.includes(query) || author.includes(query) || cat.includes(query);
             });
 
             // Apply category filter on top if not 'all'
