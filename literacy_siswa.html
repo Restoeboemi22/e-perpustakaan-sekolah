@@ -110,7 +110,10 @@
     <nav class="navbar navbar-light bg-white shadow-sm sticky-top">
         <div class="container-fluid">
             <span class="navbar-brand fw-bold mb-0 h1"><i class="bi bi-book-half text-primary"></i> Lentera Digital</span>
-            <span class="navbar-text small text-muted" id="userDisplay">Guest</span>
+            <div class="d-flex align-items-center">
+                <button onclick="window.location.reload(true)" class="btn btn-sm btn-outline-secondary me-2"><i class="bi bi-arrow-clockwise"></i></button>
+                <span class="navbar-text small text-muted" id="userDisplay">Guest</span>
+            </div>
         </div>
     </nav>
 
@@ -851,6 +854,9 @@
         // --- 2. UI Interaction ---
         window.selectTask = (id, title) => {
             console.log("Membuka tugas:", title);
+            // Debug Alert untuk APK
+            // alert("Membuka form untuk: " + title);
+            
             // Show form
             document.getElementById('taskId').value = id;
             document.getElementById('selectedTaskTitle').innerText = title;
@@ -860,6 +866,9 @@
             area.classList.remove('d-none');
             area.style.display = 'block';
             area.style.zIndex = '9999'; // Ensure top level
+            
+            // Scroll ke form (opsional, tapi membantu fokus)
+            // area.scrollIntoView({behavior: 'smooth'});
         };
 
         // --- 3. Submit Logic (Write to RTDB via REST) ---
