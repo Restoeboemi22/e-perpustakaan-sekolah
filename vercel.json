@@ -21,6 +21,10 @@
       "destination": "/kelola_siswa.html"
     },
     {
+      "source": "/admin/stats",
+      "destination": "/statistik_siswa.html"
+    },
+    {
       "source": "/login",
       "destination": "/literacy_siswa.html"
     },
