@@ -17,6 +17,10 @@
       "destination": "/kelola_peminjaman.html"
     },
     {
+      "source": "/admin/students",
+      "destination": "/kelola_siswa.html"
+    },
+    {
       "source": "/login",
       "destination": "/literacy_siswa.html"
     },

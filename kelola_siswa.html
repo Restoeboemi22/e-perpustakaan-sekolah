@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Peminjaman - Admin Perpustakaan</title>
+    <title>Data Siswa - Admin Perpustakaan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
@@ -51,15 +51,9 @@
         .table-custom th { background-color: white; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; padding: 1rem 1.5rem; }
         .table-custom td { padding: 1rem 1.5rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.95rem; }
         
-        .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .badge-borrowed { background: #eff6ff; color: #2563eb; }
-        .badge-returned { background: #f0fdf4; color: #16a34a; }
-        .badge-overdue { background: #fef2f2; color: #ef4444; }
-        
         .action-btn { width: 32px; height: 32px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; border: none; background: transparent; transition: all 0.2s; }
         .action-btn.edit { color: #2563eb; background: #eff6ff; }
         .action-btn.delete { color: #ef4444; background: #fef2f2; }
-        .action-btn.check { color: #16a34a; background: #f0fdf4; }
         .action-btn:hover { transform: translateY(-1px); }
 
         @media (max-width: 768px) {
@@ -91,13 +85,13 @@
                 <a href="/admin/books" class="list-group-item list-group-item-action">
                     <i class="bi bi-journal-album"></i> Kelola Buku
                 </a>
-                <a href="/admin/loans" class="list-group-item list-group-item-action active">
+                <a href="/admin/loans" class="list-group-item list-group-item-action">
                     <i class="bi bi-journal-arrow-up"></i> Peminjaman
                 </a>
                 <a href="/admin/literacy" class="list-group-item list-group-item-action">
                     <i class="bi bi-pencil-square"></i> Kelola Literasi
                 </a>
-                <a href="/admin/students" class="list-group-item list-group-item-action">
+                <a href="/admin/students" class="list-group-item list-group-item-action active">
                     <i class="bi bi-people"></i> Data Siswa
                 </a>
                 <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Statistik akan segera hadir!')">
@@ -123,7 +117,7 @@
         <div id="page-content-wrapper">
             <div class="top-header">
                 <div>
-                    <h1 class="page-title">Kelola Peminjaman</h1>
+                    <h1 class="page-title">Data Siswa</h1>
                 </div>
                 <div>
                     <button class="btn btn-light d-md-none me-2" id="menu-toggle"><i class="bi bi-list"></i></button>
@@ -131,23 +125,34 @@
             </div>
 
             <div class="main-container">
-                <!-- Form Peminjaman (Collapsible) -->
-                <div class="collapse show" id="loanFormCard">
+                <!-- Form Tambah Siswa (Collapsible) -->
+                <div class="collapse show" id="studentFormCard">
                     <div class="card">
                         <div class="card-header-custom">
-                            <h5 class="card-title-custom">Catat Peminjaman Baru</h5>
+                            <h5 class="card-title-custom">Tambah Siswa Baru</h5>
                         </div>
                         <div class="card-body p-4">
-                            <form id="loanForm">
+                            <form id="studentForm">
+                                <input type="hidden" id="studentId"> <!-- For Edit Mode -->
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
-                                            <label class="form-label">Nama Siswa</label>
-                                            <input type="text" id="studentName" class="form-control" placeholder="Nama Lengkap Siswa" required>
+                                            <label class="form-label">Nama Lengkap (Username)</label>
+                                            <input type="text" id="name" class="form-control" placeholder="Nama Siswa" required>
+                                            <div class="form-text">Nama ini akan digunakan sebagai Username login.</div>
                                         </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">NISN (Password)</label>
+                                            <input type="text" id="nisn" class="form-control" placeholder="Nomor Induk Siswa Nasional" required>
+                                            <div class="form-text">NISN akan digunakan sebagai Password login.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Kelas</label>
-                                            <select id="studentClass" class="form-select" required>
+                                            <select id="class" class="form-select" required>
                                                 <option value="" selected disabled>Pilih Kelas</option>
                                                 <option value="X">Kelas X</option>
                                                 <option value="XI">Kelas XI</option>
@@ -155,57 +160,41 @@
                                                 <option value="GURU">Guru / Staff</option>
                                             </select>
                                         </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Judul Buku</label>
-                                            <select id="bookSelect" class="form-select" required>
-                                                <option value="" selected disabled>Pilih Buku...</option>
-                                                <!-- Populated via JS -->
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Tanggal Pinjam</label>
-                                            <input type="date" id="loanDate" class="form-control" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Tanggal Kembali (Rencana)</label>
-                                            <input type="date" id="returnDate" class="form-control" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Status</label>
-                                            <select id="status" class="form-select" disabled>
-                                                <option value="Dipinjam" selected>Sedang Dipinjam</option>
-                                                <option value="Dikembalikan">Sudah Dikembalikan</option>
-                                            </select>
-                                        </div>
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn-save">
-                                    <span id="btnText">Simpan Peminjaman</span>
-                                    <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"></span>
-                                </button>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-light d-none" id="btnCancel" onclick="resetForm()">Batal Edit</button>
+                                    <button type="submit" class="btn-save w-auto px-4 mt-0">
+                                        <span id="btnText">Simpan Data</span>
+                                        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"></span>
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tabel Riwayat -->
+                <!-- Tabel Data Siswa -->
                 <div class="card">
+                    <div class="card-header-custom">
+                        <h5 class="card-title-custom">Daftar Siswa</h5>
+                        <div class="d-flex gap-2">
+                            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Cari nama atau NISN..." style="width: 200px;">
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-custom table-hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th class="ps-4" style="width: 25%;">Peminjam</th>
-                                    <th style="width: 30%;">Buku</th>
-                                    <th style="width: 20%;">Tanggal</th>
-                                    <th style="width: 15%;">Status</th>
+                                    <th class="ps-4" style="width: 40%;">Nama Siswa</th>
+                                    <th style="width: 30%;">NISN</th>
+                                    <th style="width: 20%;">Kelas</th>
                                     <th class="text-end pe-4" style="width: 10%;">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="loanTableBody">
-                                <tr><td colspan="5" class="text-center py-5 text-muted">Memuat data...</td></tr>
+                            <tbody id="studentTableBody">
+                                <tr><td colspan="4" class="text-center py-5 text-muted">Memuat data...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -235,18 +224,19 @@
             el.classList.toggle("toggled");
         };
 
-        // Set default dates
-        const today = new Date();
-        const nextWeek = new Date(today);
-        nextWeek.setDate(today.getDate() + 7);
-        
-        document.getElementById('loanDate').valueAsDate = today;
-        document.getElementById('returnDate').valueAsDate = nextWeek;
+        // Reset Form Helper
+        function resetForm() {
+            document.getElementById('studentForm').reset();
+            document.getElementById('studentId').value = '';
+            document.getElementById('btnText').textContent = 'Simpan Data';
+            document.getElementById('btnCancel').classList.add('d-none');
+            document.querySelector('.card-title-custom').textContent = 'Tambah Siswa Baru';
+        }
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
@@ -260,176 +250,150 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Load Books for Dropdown
-        async function loadBooks() {
-            const bookSelect = document.getElementById('bookSelect');
-            try {
-                const q = query(collection(db, "books"), orderBy("title", "asc"));
-                const querySnapshot = await getDocs(q);
-                
-                querySnapshot.forEach((doc) => {
-                    const book = doc.data();
-                    const option = document.createElement('option');
-                    option.value = doc.id; // Use Doc ID as value
-                    option.textContent = book.title;
-                    option.dataset.title = book.title; // Store title for easier access
-                    bookSelect.appendChild(option);
-                });
-            } catch (error) {
-                console.error("Error loading books: ", error);
-            }
-        }
-
-        // Load Loans Table
-        async function loadLoans() {
-            const tableBody = document.getElementById('loanTableBody');
-            tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Memuat data...</td></tr>';
+        // Load Students
+        async function loadStudents(searchTerm = "") {
+            const tableBody = document.getElementById('studentTableBody');
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">Memuat data...</td></tr>';
             
             try {
-                const q = query(collection(db, "loans"), orderBy("loanDate", "desc"));
+                // Note: Firestore searching is limited. For proper search we need Algolia/Typesense.
+                // For this simple app, we'll client-side filter or just simple ordering.
+                const q = query(collection(db, "students"), orderBy("name", "asc"));
                 const querySnapshot = await getDocs(q);
                 
                 tableBody.innerHTML = '';
-                
-                if(querySnapshot.empty) {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Belum ada data peminjaman</td></tr>';
-                    return;
-                }
+                let hasData = false;
 
                 querySnapshot.forEach((doc) => {
-                    const loan = doc.data();
+                    const student = doc.data();
+                    
+                    // Simple client-side search
+                    if (searchTerm) {
+                        const term = searchTerm.toLowerCase();
+                        const name = (student.name || "").toLowerCase();
+                        const nisn = (student.nisn || "").toLowerCase();
+                        if (!name.includes(term) && !nisn.includes(term)) return;
+                    }
+
+                    hasData = true;
                     const row = document.createElement('tr');
                     
-                    // Format Dates
-                    const loanDate = new Date(loan.loanDate).toLocaleDateString('id-ID');
-                    const returnDate = new Date(loan.returnDate).toLocaleDateString('id-ID');
-                    
-                    // Status Badge
-                    let statusBadge = '';
-                    if (loan.status === 'Dipinjam') {
-                        statusBadge = '<span class="badge-status badge-borrowed">Dipinjam</span>';
-                    } else if (loan.status === 'Dikembalikan') {
-                        statusBadge = '<span class="badge-status badge-returned">Dikembalikan</span>';
-                    } else {
-                        statusBadge = '<span class="badge-status badge-overdue">Terlambat</span>';
-                    }
-
-                    // Action Buttons (Only show 'Return' if status is Dipinjam)
-                    let actionButtons = `
-                        <button class="action-btn delete" onclick="deleteLoan('${doc.id}')" title="Hapus">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    `;
-                    
-                    if (loan.status === 'Dipinjam') {
-                        actionButtons = `
-                            <button class="action-btn check me-1" onclick="returnBook('${doc.id}')" title="Tandai Kembali">
-                                <i class="bi bi-check-lg"></i>
-                            </button>
-                            ${actionButtons}
-                        `;
-                    }
-
                     row.innerHTML = `
-                        <td class="ps-4">
-                            <div class="fw-bold text-dark">${loan.studentName}</div>
-                            <div class="small text-muted">${loan.studentClass}</div>
-                        </td>
-                        <td>${loan.bookTitle}</td>
-                        <td>
-                            <div class="small text-muted">Pinjam: ${loanDate}</div>
-                            <div class="small text-muted">Kembali: ${returnDate}</div>
-                        </td>
-                        <td>${statusBadge}</td>
+                        <td class="ps-4 fw-bold text-dark">${student.name}</td>
+                        <td>${student.nisn}</td>
+                        <td><span class="badge bg-light text-dark border">${student.class}</span></td>
                         <td class="text-end pe-4">
-                            ${actionButtons}
+                            <button class="action-btn edit me-1" onclick="editStudent('${doc.id}', '${student.name}', '${student.nisn}', '${student.class}')" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteStudent('${doc.id}', '${student.name}')" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </td>
                     `;
                     tableBody.appendChild(row);
                 });
+
+                if (!hasData) {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">Tidak ada data siswa</td></tr>';
+                }
+
             } catch (error) {
-                console.error("Error loading loans: ", error);
-                tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-danger">Gagal memuat data</td></tr>';
+                console.error("Error loading students: ", error);
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-danger">Gagal memuat data</td></tr>';
             }
         }
 
-        // Save Loan
-        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+        // Save Student (Add/Update)
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const btnSpinner = document.getElementById('btnSpinner');
             const btnText = document.getElementById('btnText');
+            const studentId = document.getElementById('studentId').value;
             
             btnSpinner.classList.remove('d-none');
             btnText.textContent = 'Menyimpan...';
             
             try {
-                const bookSelect = document.getElementById('bookSelect');
-                const selectedOption = bookSelect.options[bookSelect.selectedIndex];
-                
-                const loanData = {
-                    studentName: document.getElementById('studentName').value,
-                    studentClass: document.getElementById('studentClass').value,
-                    bookId: bookSelect.value,
-                    bookTitle: selectedOption.dataset.title, // Save title to avoid extra reads
-                    loanDate: document.getElementById('loanDate').value,
-                    returnDate: document.getElementById('returnDate').value,
-                    status: 'Dipinjam',
-                    createdAt: serverTimestamp()
+                const name = document.getElementById('name').value.trim();
+                const nisn = document.getElementById('nisn').value.trim();
+                const kelas = document.getElementById('class').value;
+
+                const studentData = {
+                    name: name,
+                    username: name, // As requested: username is name
+                    nisn: nisn,
+                    password: nisn, // As requested: password is NISN
+                    class: kelas,
+                    updatedAt: serverTimestamp()
                 };
 
-                await addDoc(collection(db, "loans"), loanData);
+                if (studentId) {
+                    // Update
+                    await updateDoc(doc(db, "students", studentId), studentData);
+                    showToast('Data siswa berhasil diperbarui!');
+                } else {
+                    // Add
+                    studentData.createdAt = serverTimestamp();
+                    await addDoc(collection(db, "students"), studentData);
+                    showToast('Siswa baru berhasil ditambahkan!');
+                }
                 
-                // Show Success Toast
-                const toast = new bootstrap.Toast(document.getElementById('toast'));
-                document.getElementById('toastMessage').textContent = 'Peminjaman berhasil dicatat!';
-                toast.show();
-                
-                // Reset Form & Reload Table
-                document.getElementById('loanForm').reset();
-                document.getElementById('loanDate').valueAsDate = new Date(); // Reset date
-                loadLoans();
+                resetForm();
+                loadStudents();
 
             } catch (error) {
-                console.error("Error adding loan: ", error);
+                console.error("Error saving student: ", error);
                 alert("Gagal menyimpan data: " + error.message);
             } finally {
                 btnSpinner.classList.add('d-none');
-                btnText.textContent = 'Simpan Peminjaman';
+                btnText.textContent = studentId ? 'Update Data' : 'Simpan Data';
             }
         });
 
-        // Expose functions to global scope for HTML onclick attributes
-        window.deleteLoan = async (id) => {
-            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+        // Search Listener
+        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+            loadStudents(e.target.value);
+        });
+
+        // Expose functions globally
+        window.deleteStudent = async (id, name) => {
+            if (confirm(`Apakah Anda yakin ingin menghapus siswa "${name}"?`)) {
                 try {
-                    await deleteDoc(doc(db, "loans", id));
-                    loadLoans();
+                    await deleteDoc(doc(db, "students", id));
+                    loadStudents();
+                    showToast('Data siswa berhasil dihapus.');
                 } catch (error) {
-                    console.error("Error deleting loan: ", error);
+                    console.error("Error deleting student: ", error);
                     alert("Gagal menghapus data");
                 }
             }
         };
 
-        window.returnBook = async (id) => {
-            if (confirm('Tandai buku ini sudah dikembalikan?')) {
-                try {
-                    await updateDoc(doc(db, "loans", id), {
-                        status: 'Dikembalikan',
-                        actualReturnDate: new Date().toISOString().split('T')[0]
-                    });
-                    loadLoans();
-                } catch (error) {
-                    console.error("Error updating loan: ", error);
-                    alert("Gagal mengupdate status");
-                }
-            }
+        window.editStudent = (id, name, nisn, kelas) => {
+            document.getElementById('studentId').value = id;
+            document.getElementById('name').value = name;
+            document.getElementById('nisn').value = nisn;
+            document.getElementById('class').value = kelas;
+            
+            document.getElementById('btnText').textContent = 'Update Data';
+            document.getElementById('btnCancel').classList.remove('d-none');
+            document.querySelector('.card-title-custom').textContent = 'Edit Data Siswa';
+            
+            // Scroll to form
+            document.getElementById('studentFormCard').scrollIntoView({ behavior: 'smooth' });
         };
 
+        function showToast(message) {
+            const toastEl = document.getElementById('toast');
+            const toast = new bootstrap.Toast(toastEl);
+            document.getElementById('toastMessage').textContent = message;
+            toast.show();
+        }
+
         // Initial Load
-        loadBooks();
-        loadLoans();
+        loadStudents();
     </script>
 </body>
 </html>

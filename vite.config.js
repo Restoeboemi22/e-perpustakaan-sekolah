@@ -15,6 +15,8 @@ const rewritePlugin = () => {
           req.url = '/kelola_literasi.html';
         } else if (req.url === '/admin/loans') {
           req.url = '/kelola_peminjaman.html';
+        } else if (req.url === '/admin/students') {
+          req.url = '/kelola_siswa.html';
         }
         next();
       });
@@ -32,6 +34,7 @@ export default defineConfig({
         buku: resolve(__dirname, 'kelola_buku.html'),
         dashboard: resolve(__dirname, 'dashboard.html'),
         peminjaman: resolve(__dirname, 'kelola_peminjaman.html'),
+        kelola_siswa: resolve(__dirname, 'kelola_siswa.html'),
       },
     },
   },
