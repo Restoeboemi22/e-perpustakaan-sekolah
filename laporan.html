@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Perpustakaan - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; overflow-x: hidden; color: #333; }
+        
+        /* Sidebar Styling */
+        #wrapper { display: flex; width: 100%; min-height: 100vh; }
+        #sidebar-wrapper { width: 260px; background: white; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: all 0.3s; }
+        
+        .sidebar-brand { padding: 1.5rem; display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+        .brand-icon { width: 40px; height: 40px; background: #2563eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
+        .brand-text { font-weight: 700; font-size: 1.25rem; color: #1e293b; line-height: 1.2; }
+        .brand-sub { font-size: 0.75rem; color: #64748b; font-weight: 400; }
+
+        .menu-label { padding: 0 1.5rem; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1rem; }
+        
+        .list-group-item { border: none; padding: 10px 24px; color: #64748b; font-weight: 500; transition: all 0.2s; margin-bottom: 2px; background: transparent; display: flex; align-items: center; gap: 12px; }
+        .list-group-item:hover { background-color: #f1f5f9; color: #2563eb; }
+        .list-group-item.active { background-color: #eff6ff; color: #2563eb; font-weight: 600; border-right: 3px solid #2563eb; border-radius: 0 4px 4px 0; }
+        .list-group-item i { font-size: 1.1em; }
+
+        /* Main Content Styling */
+        #page-content-wrapper { width: 100%; margin-left: 260px; display: flex; flex-direction: column; background: #f8f9fa; }
+        
+        .top-header { padding: 2rem 2.5rem 1rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0; }
+        
+        .main-container { padding: 0 2.5rem 2.5rem 2.5rem; }
+
+        .card { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-bottom: 24px; overflow: hidden; }
+        .card-header-custom { padding: 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .card-title-custom { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0; }
+        
+        .table-custom th { background-color: white; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; padding: 1rem 1.5rem; }
+        .table-custom td { padding: 1rem 1.5rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.95rem; }
+        
+        .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-borrowed { background: #eff6ff; color: #2563eb; }
+        .badge-returned { background: #f0fdf4; color: #16a34a; }
+        
+        @media (max-width: 768px) {
+            #sidebar-wrapper { margin-left: -260px; }
+            #page-content-wrapper { margin-left: 0; }
+            #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
+            .top-header { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.5rem; }
+            .main-container { padding: 0 1.5rem 1.5rem 1.5rem; }
+        }
+
+        @media print {
+            body { background: white !important; font-size: 12px; }
+            #sidebar-wrapper, .navbar, .top-header button, .btn, .no-print { display: none !important; }
+            #page-content-wrapper { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+            .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+            .card-header-custom { border-bottom: 2px solid #000 !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <div class="sidebar-brand">
+                <div class="brand-icon"><i class="bi bi-book"></i></div>
+                <div>
+                    <div class="brand-text">Lentera</div>
+                    <div class="brand-sub">Admin Panel</div>
+                </div>
+            </div>
+            
+            <div class="menu-label">Menu Utama</div>
+            <div class="list-group list-group-flush">
+                <a href="/admin" class="list-group-item list-group-item-action">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+                <a href="/admin/books" class="list-group-item list-group-item-action">
+                    <i class="bi bi-journal-album"></i> Kelola Buku
+                </a>
+                <a href="/admin/loans" class="list-group-item list-group-item-action">
+                    <i class="bi bi-journal-arrow-up"></i> Peminjaman
+                </a>
+                <a href="/admin/literacy" class="list-group-item list-group-item-action">
+                    <i class="bi bi-pencil-square"></i> Kelola Literasi
+                </a>
+                <a href="/admin/students" class="list-group-item list-group-item-action">
+                    <i class="bi bi-people"></i> Data Anggota
+                </a>
+                <a href="/admin/stats" class="list-group-item list-group-item-action">
+                    <i class="bi bi-bar-chart"></i> Statistik Siswa
+                </a>
+                <a href="/admin/reports" class="list-group-item list-group-item-action active">
+                    <i class="bi bi-file-earmark-text"></i> Laporan
+                </a>
+            </div>
+
+            <div class="menu-label">Lainnya</div>
+            <div class="list-group list-group-flush">
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="bi bi-gear"></i> Pengaturan
+                </a>
+                <a href="/index.html" class="list-group-item list-group-item-action text-danger mt-4">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="top-header">
+                <div>
+                    <h1 class="page-title">Laporan Perpustakaan</h1>
+                    <p class="text-muted mb-0">Rekapitulasi data peminjaman dan pengembalian</p>
+                </div>
+                <div>
+                    <button class="btn btn-light d-md-none me-2" id="menu-toggle"><i class="bi bi-list"></i></button>
+                    <button class="btn btn-success me-2" onclick="exportToExcel()"><i class="bi bi-file-earmark-excel"></i> Export Excel</button>
+                    <button class="btn btn-secondary" onclick="window.print()"><i class="bi bi-printer"></i> Cetak</button>
+                </div>
+            </div>
+
+            <div class="main-container">
+                <!-- Filters -->
+                <div class="card mb-4 no-print">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Status</label>
+                                <select id="statusFilter" class="form-select" onchange="filterData()">
+                                    <option value="all">Semua Status</option>
+                                    <option value="Dipinjam">Sedang Dipinjam</option>
+                                    <option value="Dikembalikan">Sudah Dikembalikan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted">Bulan</label>
+                                <input type="month" id="monthFilter" class="form-control" onchange="filterData()">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">Cari Peminjam/Buku</label>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Ketik nama atau judul..." onkeyup="filterData()">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Table -->
+                <div class="card">
+                    <div class="card-header-custom">
+                        <h5 class="card-title-custom">Data Transaksi</h5>
+                        <div class="text-muted small" id="dataCount">Menampilkan 0 data</div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover align-middle mb-0" id="reportTable">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Peminjam</th>
+                                    <th>Kelas</th>
+                                    <th>Judul Buku</th>
+                                    <th>Tgl Kembali</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <tr><td colspan="6" class="text-center py-5 text-muted">Memuat data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script>
+        var el = document.getElementById("wrapper");
+        var toggleButton = document.getElementById("menu-toggle");
+
+        toggleButton.onclick = function () {
+            el.classList.toggle("toggled");
+        };
+
+        function resetFilters() {
+            document.getElementById('statusFilter').value = 'all';
+            document.getElementById('monthFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            filterData();
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
+            authDomain: "eperpus-sekolah.firebaseapp.com",
+            projectId: "eperpus-sekolah",
+            storageBucket: "eperpus-sekolah.firebasestorage.app",
+            messagingSenderId: "303647816343",
+            appId: "1:303647816343:web:78ad36d2d1be25930547d2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        let allLoans = [];
+
+        async function loadData() {
+            const tableBody = document.getElementById('tableBody');
+            
+            try {
+                const q = query(collection(db, "loans"), orderBy("loanDate", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                allLoans = [];
+                querySnapshot.forEach((doc) => {
+                    allLoans.push({ id: doc.id, ...doc.data() });
+                });
+                
+                renderTable(allLoans);
+            } catch (error) {
+                console.error("Error loading data:", error);
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-danger">Gagal memuat data</td></tr>';
+            }
+        }
+
+        window.renderTable = function(data) {
+            const tableBody = document.getElementById('tableBody');
+            const dataCount = document.getElementById('dataCount');
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Tidak ada data ditemukan</td></tr>';
+                dataCount.textContent = 'Menampilkan 0 data';
+                return;
+            }
+
+            let html = '';
+            data.forEach(loan => {
+                const statusBadge = loan.status === 'Dikembalikan' 
+                    ? '<span class="badge badge-returned">Dikembalikan</span>'
+                    : '<span class="badge badge-borrowed">Dipinjam</span>';
+                
+                // Format date
+                const date = new Date(loan.loanDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                const returnDate = new Date(loan.returnDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                html += `
+                    <tr>
+                        <td>${date}</td>
+                        <td>
+                            <div class="fw-bold">${loan.studentName}</div>
+                        </td>
+                        <td>${loan.studentClass || '-'}</td>
+                        <td>${loan.bookTitle}</td>
+                        <td>${returnDate}</td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+            dataCount.textContent = `Menampilkan ${data.length} data`;
+        }
+
+        window.filterData = function() {
+            const status = document.getElementById('statusFilter').value;
+            const month = document.getElementById('monthFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = allLoans.filter(loan => {
+                const matchStatus = status === 'all' || loan.status === status;
+                const matchSearch = (loan.studentName && loan.studentName.toLowerCase().includes(search)) || 
+                                  (loan.bookTitle && loan.bookTitle.toLowerCase().includes(search));
+                
+                let matchMonth = true;
+                if (month) {
+                    matchMonth = loan.loanDate.startsWith(month);
+                }
+
+                return matchStatus && matchSearch && matchMonth;
+            });
+
+            renderTable(filtered);
+        }
+
+        window.exportToExcel = function() {
+            const table = document.getElementById('reportTable');
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Laporan Perpustakaan"});
+            XLSX.writeFile(wb, `Laporan_Perpustakaan_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>

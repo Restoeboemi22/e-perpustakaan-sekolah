@@ -19,6 +19,8 @@ const rewritePlugin = () => {
           req.url = '/kelola_siswa.html';
         } else if (req.url === '/admin/stats') {
           req.url = '/statistik_siswa.html';
+        } else if (req.url === '/admin/reports') {
+          req.url = '/laporan.html';
         }
         next();
       });
@@ -38,6 +40,7 @@ export default defineConfig({
         peminjaman: resolve(__dirname, 'kelola_peminjaman.html'),
         kelola_siswa: resolve(__dirname, 'kelola_siswa.html'),
         statistik: resolve(__dirname, 'statistik_siswa.html'),
+        laporan: resolve(__dirname, 'laporan.html'),
       },
     },
   },

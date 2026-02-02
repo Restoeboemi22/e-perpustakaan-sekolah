@@ -25,6 +25,10 @@
       "destination": "/statistik_siswa.html"
     },
     {
+      "source": "/admin/reports",
+      "destination": "/laporan.html"
+    },
+    {
       "source": "/login",
       "destination": "/literacy_siswa.html"
     },
