@@ -29,6 +29,10 @@
       "destination": "/laporan.html"
     },
     {
+      "source": "/admin/settings",
+      "destination": "/pengaturan.html"
+    },
+    {
       "source": "/login",
       "destination": "/literacy_siswa.html"
     },

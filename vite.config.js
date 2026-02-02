@@ -21,6 +21,8 @@ const rewritePlugin = () => {
           req.url = '/statistik_siswa.html';
         } else if (req.url === '/admin/reports') {
           req.url = '/laporan.html';
+        } else if (req.url === '/admin/settings') {
+          req.url = '/pengaturan.html';
         }
         next();
       });
@@ -41,6 +43,7 @@ export default defineConfig({
         kelola_siswa: resolve(__dirname, 'kelola_siswa.html'),
         statistik: resolve(__dirname, 'statistik_siswa.html'),
         laporan: resolve(__dirname, 'laporan.html'),
+        pengaturan: resolve(__dirname, 'pengaturan.html'),
       },
     },
   },
