@@ -715,11 +715,21 @@
 
             // Read Button Logic
             const btnRead = document.getElementById('modalBtnRead');
-            if (book.pdfUrl) {
-                btnRead.classList.remove('d-none');
+            // Reset state
+            btnRead.classList.remove('d-none');
+            
+            if (book.pdfUrl && book.pdfUrl.trim() !== "") {
+                // E-Book Available
+                btnRead.className = 'btn btn-success fw-bold py-2';
+                btnRead.innerHTML = '<i class="bi bi-book-half"></i> Baca Sekarang';
+                btnRead.disabled = false;
                 btnRead.onclick = () => readBook(book.pdfUrl, book.title);
             } else {
-                btnRead.classList.add('d-none');
+                // E-Book Not Available (Show disabled button instead of hiding)
+                btnRead.className = 'btn btn-secondary py-2';
+                btnRead.innerHTML = '<i class="bi bi-x-circle"></i> E-Book Tidak Tersedia';
+                btnRead.disabled = true;
+                btnRead.onclick = null;
             }
 
             // Show Modal
