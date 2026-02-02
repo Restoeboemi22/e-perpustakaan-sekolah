@@ -214,9 +214,10 @@
             </div>
 
             <!-- Form Pengerjaan (Hidden sampai tugas dipilih) -->
-            <div id="submissionArea" class="card shadow-lg border-primary d-none position-fixed bottom-0 start-0 w-100 rounded-top" style="z-index: 9999; height: 85vh; overflow-y: auto; background-color: #fff;">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center sticky-top">
-                    <span><i class="bi bi-pencil-square"></i> Kerjakan Tugas</span>
+            <!-- Modified to Full Screen Overlay to prevent layout issues -->
+            <div id="submissionArea" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-white" style="z-index: 10000; overflow-y: auto;">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center sticky-top p-3 shadow-sm">
+                    <span class="h5 mb-0"><i class="bi bi-pencil-square"></i> Kerjakan Tugas</span>
                     <button type="button" class="btn-close btn-close-white" onclick="closeSubmission()"></button>
                 </div>
                 <div class="card-body">
@@ -853,22 +854,29 @@
 
         // --- 2. UI Interaction ---
         window.selectTask = (id, title) => {
-            console.log("Membuka tugas:", title);
-            // Debug Alert untuk APK
-            // alert("Membuka form untuk: " + title);
-            
-            // Show form
-            document.getElementById('taskId').value = id;
-            document.getElementById('selectedTaskTitle').innerText = title;
-            
-            const area = document.getElementById('submissionArea');
-            // Force remove d-none and apply style
-            area.classList.remove('d-none');
-            area.style.display = 'block';
-            area.style.zIndex = '9999'; // Ensure top level
-            
-            // Scroll ke form (opsional, tapi membantu fokus)
-            // area.scrollIntoView({behavior: 'smooth'});
+            try {
+                console.log("Membuka tugas:", title);
+                // Debug Alert untuk APK - ENABLED FOR DEBUGGING
+                alert("Membuka tugas: " + title + "\n(Silakan tunggu formulir muncul...)");
+                
+                // Show form
+                document.getElementById('taskId').value = id;
+                document.getElementById('selectedTaskTitle').innerText = title;
+                
+                const area = document.getElementById('submissionArea');
+                // Force remove d-none and apply style
+                area.classList.remove('d-none');
+                area.style.display = 'block';
+                area.style.zIndex = '10000'; // Ensure top level
+                
+                // Force redraw/reflow hack for some WebViews
+                area.style.opacity = '0.99';
+                setTimeout(() => area.style.opacity = '1', 10);
+
+            } catch (e) {
+                alert("Error membuka tugas: " + e.message);
+                console.error(e);
+            }
         };
 
         // --- 3. Submit Logic (Write to RTDB via REST) ---
