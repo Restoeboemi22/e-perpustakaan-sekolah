@@ -231,6 +231,11 @@
                         </div>
                         
                         <div class="mb-3">
+                            <label class="form-label">Nama Penulis</label>
+                            <input type="text" id="bookAuthor" class="form-control" required placeholder="Siapa penulis bukunya?">
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label">Ringkasan</label>
                             <textarea id="summary" class="form-control" rows="8" required placeholder="Tulis ringkasanmu disini..."></textarea>
                         </div>
@@ -911,6 +916,8 @@
                 timestamp: Date.now(),
                 submittedAt: new Date().toISOString(),
                 bookTitle: document.getElementById('bookTitle').value,
+                bookAuthor: document.getElementById('bookAuthor').value, // Add Author field
+                author: document.getElementById('bookAuthor').value, // Add Author field (redundant for safety)
                 summary: document.getElementById('summary').value,
                 status: 'pending', // Change from 'submitted' to 'pending' for Teacher App compatibility
                 points: 0 // Pending approval
