@@ -631,12 +631,25 @@
                     ? `<button onclick="toggleReportStatus('${key}', false)" class="btn btn-sm btn-secondary me-1" title="Tandai Belum"><i class="bi bi-x-circle"></i></button>`
                     : `<button onclick="toggleReportStatus('${key}', true)" class="btn btn-sm btn-success me-1" title="Tandai Sudah"><i class="bi bi-check-circle"></i></button>`;
 
-                const date = log.timestamp ? new Date(log.timestamp).toLocaleString('id-ID') : '-';
+                // Date mapping (handle timestamp, submissionDate, or createdAt)
+                const rawDate = log.timestamp || log.submissionDate || log.createdAt;
+                const date = rawDate ? new Date(rawDate).toLocaleString('id-ID') : '-';
                 
                 // Fields mapping
-                let studentNameDisplay = log.studentName || log.name || log.displayName || log.userName || log.sender || 'Tanpa Nama';
-                // If studentName is just "Firebase User" but there is a specific username/displayName, prefer that? 
-                // Actually, let's just stick to the hierarchy.
+                let studentNameDisplay = log.studentName || log.name || log.displayName || log.userName || log.sender;
+                
+                // Fallback if name is missing but studentId exists
+                if (!studentNameDisplay && log.studentId) {
+                    studentNameDisplay = `Siswa ID: ${log.studentId}`;
+                }
+                if (!studentNameDisplay) {
+                    studentNameDisplay = 'Tanpa Nama';
+                }
+                
+                // Extra check for "Firebase User"
+                if (studentNameDisplay === 'Firebase User' && log.studentId) {
+                     studentNameDisplay = `Siswa ID: ${log.studentId}`;
+                }
                 
                 let bookTitleDisplay = log.bookTitle || '-';
                 let authorDisplay = log.bookAuthor || log.author || '-';
@@ -674,7 +687,7 @@
                     id: key,
                     ...log,
                     status: isCorrected ? 'Sudah Dikoreksi' : 'Belum Dikoreksi',
-                    dateFormatted: log.timestamp ? new Date(log.timestamp).toLocaleDateString('id-ID') : '-'
+                    dateFormatted: rawDate ? new Date(rawDate).toLocaleDateString('id-ID') : '-'
                 });
 
                 // Logic Distribution
