@@ -799,8 +799,9 @@
         };
 
         window.closeSubmission = () => {
-            document.getElementById('submissionArea').classList.add('d-none');
-            // Remove backdrop if we add one later
+            const area = document.getElementById('submissionArea');
+            area.classList.add('d-none');
+            area.style.display = ''; // Reset inline style
         }
 
         // --- 1. Load Tasks (Read from RTDB) ---
@@ -821,10 +822,13 @@
                     const task = data[key];
                     if (task.isActive === false) return; // Skip non-active
 
+                    // Escape single quotes for onclick attribute
+                    const safeTitle = (task.title || "").replace(/'/g, "\\'");
+
                     const col = document.createElement('div');
                     col.className = 'col-12 mb-3'; // Full width for mobile list style
                     col.innerHTML = `
-                        <div class="card task-card shadow-sm border-0 h-100" onclick="selectTask('${key}', '${task.title}')" id="card-${key}">
+                        <div class="card task-card shadow-sm border-0 h-100" onclick="selectTask('${key}', '${safeTitle}')" id="card-${key}">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <h6 class="card-title fw-bold text-primary mb-1">${task.title}</h6>
@@ -846,10 +850,16 @@
 
         // --- 2. UI Interaction ---
         window.selectTask = (id, title) => {
+            console.log("Membuka tugas:", title);
             // Show form
             document.getElementById('taskId').value = id;
             document.getElementById('selectedTaskTitle').innerText = title;
-            document.getElementById('submissionArea').classList.remove('d-none');
+            
+            const area = document.getElementById('submissionArea');
+            area.classList.remove('d-none');
+            
+            // Pastikan area terlihat dengan z-index tinggi
+            area.style.display = 'block'; 
         };
 
         // --- 3. Submit Logic (Write to RTDB via REST) ---
