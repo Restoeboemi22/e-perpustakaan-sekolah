@@ -235,11 +235,12 @@
                                             <th>Judul Tugas</th>
                                             <th>Tanggal Kirim</th>
                                             <th>Lampiran/Isi</th>
+                                            <th>Status</th>
                                             <th class="text-end pe-4">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="reportList">
-                                        <tr><td colspan="5" class="text-center py-5 text-muted">Klik Refresh untuk memuat laporan...</td></tr>
+                                        <tr><td colspan="6" class="text-center py-5 text-muted">Klik Refresh untuk memuat laporan...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -286,6 +287,7 @@
         // Expose functions to global scope
         window.deleteTask = deleteTask;
         window.deleteReport = deleteReport;
+        window.toggleReportStatus = toggleReportStatus;
         window.exportReports = exportReports;
 
         // --- TASKS LOGIC ---
@@ -385,7 +387,7 @@
 
         async function loadReports() {
             const tbody = document.getElementById('reportList');
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Memuat laporan...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Memuat laporan...</td></tr>';
 
             try {
                 const response = await fetch(DATABASE_URL + LOGS_ENDPOINT);
@@ -395,7 +397,7 @@
                 renderReports(data);
             } catch (error) {
                 console.error('Error:', error);
-                tbody.innerHTML = `<tr><td colspan="5" class="text-danger text-center">Gagal memuat laporan: ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-danger text-center">Gagal memuat laporan: ${error.message}</td></tr>`;
             }
         }
 
@@ -405,16 +407,27 @@
             currentReports = [];
             
             if (!data) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Belum ada laporan masuk.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Belum ada laporan masuk.</td></tr>';
                 return;
             }
 
             Object.keys(data).forEach(key => {
                 const log = data[key];
+                const isCorrected = log.status === 'corrected';
+                const rowClass = isCorrected ? 'table-success' : 'table-warning';
+                const statusBadge = isCorrected 
+                    ? '<span class="badge bg-success">Sudah Dikoreksi</span>' 
+                    : '<span class="badge bg-warning text-dark">Belum Dikoreksi</span>';
+                
+                const actionBtn = isCorrected
+                    ? `<button onclick="toggleReportStatus('${key}', false)" class="btn btn-sm btn-secondary me-1" title="Tandai Belum"><i class="bi bi-x-circle"></i></button>`
+                    : `<button onclick="toggleReportStatus('${key}', true)" class="btn btn-sm btn-success me-1" title="Tandai Sudah"><i class="bi bi-check-circle"></i></button>`;
+
                 // Flatten for export
                 currentReports.push({
                     id: key,
                     ...log,
+                    status: isCorrected ? 'Sudah Dikoreksi' : 'Belum Dikoreksi',
                     dateFormatted: log.timestamp ? new Date(log.timestamp).toLocaleDateString('id-ID') : '-'
                 });
 
@@ -428,18 +441,40 @@
                 }
 
                 const row = `
-                    <tr>
+                    <tr class="${rowClass}">
                         <td class="ps-4 fw-bold">${log.studentName || 'Tanpa Nama'}</td>
                         <td>${log.taskTitle || 'Tugas Umum'}</td>
                         <td>${date}</td>
                         <td>${contentDisplay}</td>
+                        <td>${statusBadge}</td>
                         <td class="text-end pe-4">
+                            ${actionBtn}
                             <button onclick="deleteReport('${key}')" class="btn btn-sm btn-danger" title="Hapus"><i class="bi bi-trash"></i></button>
                         </td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
+        }
+
+        async function toggleReportStatus(id, isCorrected) {
+            try {
+                const updateUrl = `${DATABASE_URL}/literacy_logs/${id}.json`;
+                // We use PATCH to update only specific fields
+                const response = await fetch(updateUrl, { 
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: isCorrected ? 'corrected' : 'pending' })
+                });
+
+                if (response.ok) {
+                    loadReports();
+                } else {
+                    alert('Gagal mengubah status laporan');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
         }
 
         async function deleteReport(id) {
