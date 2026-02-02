@@ -372,6 +372,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
@@ -385,6 +386,17 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const storage = getStorage(app);
+        const auth = getAuth(app);
+
+        // Cek Status Login
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                console.warn("User belum login, redirecting...");
+                window.location.href = "/index.html"; // Redirect jika tidak login
+            } else {
+                console.log("User logged in:", user.email);
+            }
+        });
 
         // Data Kategori Berjenjang
         const categoryData = {
@@ -489,7 +501,7 @@
             // Opsional: Bisa diubah jadi input text jika ingin custom detail, tapi user minta dropdown.
         });
 
-        // Upload Helper with Progress
+        // Upload Helper with Progress and Timeout
         async function uploadFile(file, folder, progressId) {
             if (!file) return null;
             
@@ -507,6 +519,12 @@
             const uploadTask = uploadBytesResumable(storageRef, file);
             
             return new Promise((resolve, reject) => {
+                // Timeout Handler (60 detik)
+                const timeoutTimer = setTimeout(() => {
+                    uploadTask.cancel();
+                    reject(new Error("Upload timeout: Koneksi terlalu lambat atau terputus."));
+                }, 60000);
+
                 uploadTask.on('state_changed',
                     (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -520,7 +538,18 @@
                         }
                     },
                     (error) => {
+                        clearTimeout(timeoutTimer);
                         console.error("Upload error:", error);
+                        
+                        let errorMsg = "Gagal upload file.";
+                        if (error.code === 'storage/unauthorized') {
+                            errorMsg = "Izin ditolak: Anda tidak memiliki akses untuk mengupload.";
+                        } else if (error.code === 'storage/canceled') {
+                            errorMsg = "Upload dibatalkan.";
+                        } else if (error.code === 'storage/unknown') {
+                            errorMsg = "Terjadi kesalahan yang tidak diketahui.";
+                        }
+
                         if (progressId) {
                             const progressBar = document.getElementById(progressId);
                             if (progressBar) {
@@ -528,10 +557,11 @@
                                 progressBar.textContent = 'Gagal';
                             }
                         }
-                        alert("Gagal upload file: " + error.message);
+                        alert(errorMsg + " (" + error.message + ")");
                         reject(error);
                     },
                     async () => {
+                        clearTimeout(timeoutTimer);
                         try {
                             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                             if (progressId) {
