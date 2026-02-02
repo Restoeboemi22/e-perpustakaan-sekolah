@@ -340,9 +340,10 @@
                                     <thead>
                                         <tr>
                                             <th class="ps-4">Nama Siswa</th>
-                                            <th>Judul Tugas</th>
+                                            <th>Judul Buku</th>
+                                            <th>Penulis</th>
+                                            <th>Ringkasan</th>
                                             <th>Tanggal Kirim</th>
-                                            <th>Lampiran/Isi</th>
                                             <th>Status</th>
                                             <th class="text-end pe-4">Aksi</th>
                                         </tr>
@@ -384,9 +385,10 @@
                                     <thead>
                                         <tr>
                                             <th class="ps-4">Nama Siswa</th>
-                                            <th>Judul Tugas</th>
+                                            <th>Judul Buku</th>
+                                            <th>Penulis</th>
+                                            <th>Ringkasan</th>
                                             <th>Tanggal Kirim</th>
-                                            <th>Lampiran/Isi</th>
                                             <th>Status</th>
                                             <th class="text-end pe-4">Aksi</th>
                                         </tr>
@@ -630,25 +632,35 @@
                     : `<button onclick="toggleReportStatus('${key}', true)" class="btn btn-sm btn-success me-1" title="Tandai Sudah"><i class="bi bi-check-circle"></i></button>`;
 
                 const date = log.timestamp ? new Date(log.timestamp).toLocaleString('id-ID') : '-';
+                
+                // Fields mapping
+                let studentNameDisplay = log.studentName || log.name || log.displayName || log.userName || log.sender || 'Tanpa Nama';
+                // If studentName is just "Firebase User" but there is a specific username/displayName, prefer that? 
+                // Actually, let's just stick to the hierarchy.
+                
+                let bookTitleDisplay = log.bookTitle || '-';
+                let authorDisplay = log.bookAuthor || log.author || '-';
                 let summaryDisplay = log.summary || log.content || '-';
-                let bookTitleDisplay = log.bookTitle ? `<strong>${log.bookTitle}</strong><br>` : '';
-                let contentDisplay = bookTitleDisplay + summaryDisplay;
-
+                
+                // Truncate summary if too long
+                let summaryTruncated = summaryDisplay;
+                if (summaryDisplay.length > 50) {
+                    summaryTruncated = summaryDisplay.substring(0, 50) + '...';
+                }
                 if (summaryDisplay.startsWith('http')) {
-                    contentDisplay = `<a href="${summaryDisplay}" target="_blank" class="text-primary text-decoration-none"><i class="bi bi-link-45deg"></i> Buka Link</a>`;
-                } else if (summaryDisplay.length > 50) {
-                    contentDisplay = bookTitleDisplay + summaryDisplay.substring(0, 50) + '...';
+                    summaryTruncated = `<a href="${summaryDisplay}" target="_blank" class="text-primary text-decoration-none"><i class="bi bi-link-45deg"></i> Buka Link</a>`;
                 }
 
                 const rowHtml = `
                     <tr class="${rowClass}">
                         <td class="ps-4 fw-bold">
-                            ${log.studentName || 'Tanpa Nama'}
+                            ${studentNameDisplay}
                             <br><small class="text-muted fw-normal">${log.class || log.kelas || '-'}</small>
                         </td>
-                        <td>${log.taskTitle || 'Tugas Umum'}</td>
+                        <td>${bookTitleDisplay}</td>
+                        <td>${authorDisplay}</td>
+                        <td>${summaryTruncated}</td>
                         <td>${date}</td>
-                        <td>${contentDisplay}</td>
                         <td>${statusBadge}</td>
                         <td class="text-end pe-4">
                             ${actionBtn}
