@@ -436,25 +436,56 @@
 
         async function loadFeaturedTask() {
             try {
-                // Fetch latest task from Firestore 'literacy_tasks'
-                // Assuming 'createdAt' or just get any document if no proper timestamp
-                const q = query(collection(db, "literacy_tasks"), limit(1));
-                // If you have a createdAt field, use: orderBy("createdAt", "desc"), limit(1)
+                // Fetch tasks from RTDB (Sama seperti loadTasks)
+                const resp = await fetch(`${DB_URL}/literacy_tasks.json`);
+                const data = await resp.json();
                 
-                const snap = await getDocs(q);
-                if (!snap.empty) {
-                    const task = snap.docs[0].data();
-                    document.getElementById('featured-task-title').innerText = task.title || "Tugas Mingguan";
-                    document.getElementById('featured-task-desc').innerText = task.description || "Kerjakan tugas literasi baru ini!";
-                    document.getElementById('featured-task-deadline').innerHTML = `<i class="bi bi-clock"></i> ${task.duration || '60'} Menit`;
-                    document.getElementById('featured-task-points').innerHTML = `<i class="bi bi-star-fill"></i> ${task.points || '10'} Poin`;
-                } else {
-                    document.getElementById('featured-task-title').innerText = "Tidak ada tantangan aktif";
-                    document.getElementById('featured-task-desc').innerText = "Istirahat dulu sejenak.";
+                if (data) {
+                    // Ambil tugas terakhir yang aktif
+                    const keys = Object.keys(data);
+                    if (keys.length > 0) {
+                        // Cari tugas aktif terakhir
+                        let task = null;
+                        let taskId = null;
+                        
+                        // Loop dari belakang
+                        for (let i = keys.length - 1; i >= 0; i--) {
+                            if (data[keys[i]].isActive !== false) {
+                                task = data[keys[i]];
+                                taskId = keys[i];
+                                break;
+                            }
+                        }
+
+                        if (task) {
+                            document.getElementById('featured-task-title').innerText = task.title || "Tugas Mingguan";
+                            document.getElementById('featured-task-desc').innerText = task.description || "Kerjakan tugas literasi baru ini!";
+                            document.getElementById('featured-task-deadline').innerHTML = `<i class="bi bi-clock"></i> ${task.durationMinutes || task.duration || '60'} Menit`;
+                            document.getElementById('featured-task-points').innerHTML = `<i class="bi bi-star-fill"></i> ${task.points || '10'} Poin`;
+                            
+                            // Update tombol agar langsung membuka tugas ini
+                            const btn = document.getElementById('featured-task-btn');
+                            btn.onclick = () => {
+                                 switchView('tasks');
+                                 // Auto select task setelah pindah view
+                                 setTimeout(() => selectTask(taskId, task.title), 300);
+                            };
+                            return;
+                        }
+                    }
                 }
+                showEmptyFeatured();
             } catch (e) {
                 console.error("Error loading featured task:", e);
+                showEmptyFeatured();
             }
+        }
+
+        function showEmptyFeatured() {
+            document.getElementById('featured-task-title').innerText = "Tidak ada tantangan aktif";
+            document.getElementById('featured-task-desc').innerText = "Istirahat dulu sejenak.";
+            document.getElementById('featured-task-deadline').innerHTML = "";
+            document.getElementById('featured-task-points').innerHTML = "";
         }
 
         // --- Catalog Logic ---
