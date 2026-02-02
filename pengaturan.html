@@ -135,7 +135,7 @@
                                 <form id="appProfileForm">
                                     <div class="mb-3">
                                         <label class="form-label">Nama Aplikasi</label>
-                                        <input type="text" class="form-control bg-light" value="E-Perpustakaan Lentera" readonly>
+                                        <input type="text" class="form-control" value="E-Perpustakaan Lentera" id="appName" disabled>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Nama Sekolah</label>
@@ -249,6 +249,7 @@
                     const data = docSnap.data();
                     
                     // Populate Profile
+                    if (data.appName) document.getElementById('appName').value = data.appName;
                     if (data.schoolName) document.getElementById('schoolName').value = data.schoolName;
                     if (data.schoolAddress) document.getElementById('schoolAddress').value = data.schoolAddress;
                     if (data.schoolEmail) document.getElementById('schoolEmail').value = data.schoolEmail;
@@ -300,11 +301,13 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
 
             try {
+                const appName = document.getElementById('appName').value;
                 const schoolName = document.getElementById('schoolName').value;
                 const schoolAddress = document.getElementById('schoolAddress').value;
                 const schoolEmail = document.getElementById('schoolEmail').value;
 
                 await setDoc(doc(db, "settings", "general_config"), {
+                    appName,
                     schoolName,
                     schoolAddress,
                     schoolEmail,
