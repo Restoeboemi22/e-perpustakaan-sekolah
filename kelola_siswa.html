@@ -186,6 +186,13 @@
                             <button class="btn btn-sm btn-success text-white" onclick="document.getElementById('excelInput').click()">
                                 <i class="bi bi-file-earmark-excel"></i> Import Excel
                             </button>
+                            <select id="filterClass" class="form-select form-select-sm" style="width: 150px;">
+                                <option value="">Semua Kelas</option>
+                                <option value="X">Kelas X</option>
+                                <option value="XI">Kelas XI</option>
+                                <option value="XII">Kelas XII</option>
+                                <option value="GURU">Guru / Staff</option>
+                            </select>
                             <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Cari nama atau NISN..." style="width: 200px;">
                         </div>
                     </div>
@@ -257,7 +264,7 @@
         const db = getFirestore(app);
 
         // Load Students
-        async function loadStudents(searchTerm = "") {
+        async function loadStudents(searchTerm = "", classFilter = "") {
             const tableBody = document.getElementById('studentTableBody');
             tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">Memuat data...</td></tr>';
             
@@ -273,12 +280,16 @@
                 querySnapshot.forEach((doc) => {
                     const student = doc.data();
                     
-                    // Simple client-side search
+                    // Simple client-side search & filter
                     if (searchTerm) {
                         const term = searchTerm.toLowerCase();
                         const name = (student.name || "").toLowerCase();
                         const nisn = (student.nisn || "").toLowerCase();
                         if (!name.includes(term) && !nisn.includes(term)) return;
+                    }
+
+                    if (classFilter && student.class !== classFilter) {
+                        return;
                     }
 
                     hasData = true;
@@ -360,7 +371,14 @@
 
         // Search Listener
         document.getElementById('searchInput').addEventListener('keyup', (e) => {
-            loadStudents(e.target.value);
+            const classFilter = document.getElementById('filterClass').value;
+            loadStudents(e.target.value, classFilter);
+        });
+
+        // Filter Listener
+        document.getElementById('filterClass').addEventListener('change', (e) => {
+            const searchTerm = document.getElementById('searchInput').value;
+            loadStudents(searchTerm, e.target.value);
         });
 
         // Excel Import Listener
