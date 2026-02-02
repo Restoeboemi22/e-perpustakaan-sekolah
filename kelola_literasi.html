@@ -375,6 +375,15 @@
         window.deleteReport = deleteReport;
         window.toggleReportStatus = toggleReportStatus;
         window.exportReports = exportReports;
+        window.printReports = printReports;
+
+        function printReports() {
+            const title = document.querySelector('.card-title-custom');
+            if(title) {
+                title.setAttribute('data-print-date', new Date().toLocaleDateString('id-ID'));
+            }
+            window.print();
+        }
 
         // --- TASKS LOGIC ---
 
