@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Siswa - Admin Perpustakaan</title>
+    <title>Data Anggota - Admin Perpustakaan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <!-- Excel Library -->
@@ -94,10 +94,10 @@
                     <i class="bi bi-pencil-square"></i> Kelola Literasi
                 </a>
                 <a href="/admin/students" class="list-group-item list-group-item-action active">
-                    <i class="bi bi-people"></i> Data Siswa
+                    <i class="bi bi-people"></i> Data Anggota
                 </a>
                 <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Statistik akan segera hadir!')">
-                    <i class="bi bi-bar-chart"></i> Statistik Siswa
+                    <i class="bi bi-bar-chart"></i> Statistik Anggota
                 </a>
                 <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Laporan akan segera hadir!')">
                     <i class="bi bi-file-earmark-text"></i> Laporan
@@ -119,7 +119,7 @@
         <div id="page-content-wrapper">
             <div class="top-header">
                 <div>
-                    <h1 class="page-title">Data Siswa</h1>
+                    <h1 class="page-title">Data Anggota</h1>
                 </div>
                 <div>
                     <button class="btn btn-light d-md-none me-2" id="menu-toggle"><i class="bi bi-list"></i></button>
@@ -127,11 +127,11 @@
             </div>
 
             <div class="main-container">
-                <!-- Form Tambah Siswa (Collapsible) -->
+                <!-- Form Tambah Anggota (Collapsible) -->
                 <div class="collapse show" id="studentFormCard">
                     <div class="card">
                         <div class="card-header-custom">
-                            <h5 class="card-title-custom">Tambah Siswa Baru</h5>
+                            <h5 class="card-title-custom">Tambah Anggota Baru</h5>
                         </div>
                         <div class="card-body p-4">
                             <form id="studentForm">
@@ -183,10 +183,10 @@
                     </div>
                 </div>
 
-                <!-- Tabel Data Siswa -->
+                <!-- Tabel Data Anggota -->
                 <div class="card">
                     <div class="card-header-custom">
-                        <h5 class="card-title-custom">Daftar Siswa</h5>
+                        <h5 class="card-title-custom">Daftar Anggota</h5>
                         <div class="d-flex gap-2">
                             <input type="file" id="excelInput" accept=".xlsx, .xls" class="d-none">
                             <button class="btn btn-sm btn-success text-white" onclick="document.getElementById('excelInput').click()">
@@ -255,7 +255,7 @@
             document.getElementById('studentId').value = '';
             document.getElementById('btnText').textContent = 'Simpan Data';
             document.getElementById('btnCancel').classList.add('d-none');
-            document.querySelector('.card-title-custom').textContent = 'Tambah Siswa Baru';
+            document.querySelector('.card-title-custom').textContent = 'Tambah Anggota Baru';
         }
     </script>
 
