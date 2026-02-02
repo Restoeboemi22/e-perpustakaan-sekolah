@@ -33,15 +33,14 @@
         .top-header { padding: 2rem 2.5rem 1rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
         .page-title { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0; }
         
-        .btn-add { background-color: #2563eb; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
-        .btn-add:hover { background-color: #1d4ed8; color: white; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
-
         .main-container { padding: 0 2.5rem 2.5rem 2.5rem; }
 
-        .card { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-bottom: 24px; overflow: hidden; }
-        .card-header-custom { padding: 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-        .card-title-custom { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0; }
+        /* Card Custom */
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-bottom: 24px; overflow: hidden; }
+        .card-header-custom { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; background: white; display: flex; justify-content: space-between; align-items: center; }
+        .card-title-custom { font-size: 1rem; font-weight: 600; color: #1e293b; margin: 0; }
         
+        /* Form Elements */
         .form-label { font-size: 0.875rem; font-weight: 500; color: #64748b; margin-bottom: 0.5rem; }
         .form-control, .form-select { border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.75rem 1rem; font-size: 0.95rem; color: #334155; }
         .form-control::placeholder { color: #94a3b8; }
@@ -117,6 +116,9 @@
                 <a href="/admin/settings" class="list-group-item list-group-item-action">
                     <i class="bi bi-gear"></i> Pengaturan
                 </a>
+                <a href="/index.html" class="list-group-item list-group-item-action text-danger mt-4">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </a>
             </div>
         </div>
 
@@ -125,16 +127,22 @@
             <div class="top-header">
                 <div>
                     <h1 class="page-title">Kelola Buku</h1>
+                    <div class="text-muted small mt-1">
+                        Selamat Datang, <span class="fw-bold text-primary">Admin Perpustakaan</span>
+                    </div>
                 </div>
-                <div>
-                    <button class="btn btn-light d-md-none me-2" id="menu-toggle"><i class="bi bi-list"></i></button>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-light d-md-none" id="menu-toggle"><i class="bi bi-list"></i></button>
+                    <button class="btn btn-primary btn-sm d-none d-md-block shadow-sm rounded-pill px-3">
+                        <i class="bi bi-bell"></i> <span class="ms-1">Notifikasi</span>
+                    </button>
                 </div>
             </div>
 
             <div class="main-container">
                 <!-- Form Tambah Buku (Collapsible) -->
                 <div class="collapse show" id="addBookCard">
-                    <div class="card">
+                    <div class="card-custom">
                         <div class="card-header-custom">
                             <h5 class="card-title-custom">Tambah Buku Baru</h5>
                         </div>
@@ -226,7 +234,13 @@
                 </div>
 
                 <!-- Daftar Buku -->
-                <div class="card">
+                <div class="card-custom">
+                    <div class="card-header-custom">
+                         <h5 class="card-title-custom">Daftar Koleksi Buku</h5>
+                         <div class="d-flex gap-2">
+                             <input type="text" class="form-control form-control-sm" style="width: 200px;" placeholder="Cari buku...">
+                         </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-custom table-hover align-middle mb-0">
                             <thead>

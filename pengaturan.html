@@ -36,10 +36,38 @@
         .main-container { padding: 0 2.5rem 2.5rem 2.5rem; }
 
         /* Custom Cards */
-        .card { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-bottom: 24px; }
-        .card-header { background: white; border-bottom: 1px solid #f1f5f9; padding: 1.5rem; border-radius: 12px 12px 0 0; }
-        .card-body { padding: 1.5rem; }
-        .card-title { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0; }
+        .card-custom {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            background: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .card-header-custom {
+            background: white;
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title-custom {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body-custom {
+            padding: 1.5rem;
+        }
         
         .form-label { font-weight: 500; color: #334155; font-size: 0.9rem; }
         .form-control { border-radius: 8px; border-color: #e2e8f0; padding: 0.6rem 1rem; font-size: 0.95rem; }
@@ -161,14 +189,14 @@
 
                     <!-- Konfigurasi Peminjaman -->
                     <div class="col-lg-6">
-                        <div class="card h-100">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title">Konfigurasi Peminjaman</h5>
+                        <div class="card-custom h-100">
+                            <div class="card-header-custom">
+                                <h5 class="card-title-custom">Konfigurasi Peminjaman</h5>
                                 <button class="btn btn-sm btn-outline-primary" onclick="toggleEdit('loanConfigForm', this)">
                                     <i class="bi bi-pencil-square me-1"></i> Edit
                                 </button>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body p-4">
                                 <form id="loanConfigForm">
                                     <div class="mb-3">
                                         <label class="form-label">Durasi Peminjaman (Hari)</label>
