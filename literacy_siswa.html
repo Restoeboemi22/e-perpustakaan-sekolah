@@ -211,8 +211,8 @@
             </div>
 
             <!-- Form Pengerjaan (Hidden sampai tugas dipilih) -->
-            <div id="submissionArea" class="card shadow-lg border-primary d-none position-fixed bottom-0 start-0 w-100 rounded-top" style="z-index: 2000; height: 80vh; overflow-y: auto;">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <div id="submissionArea" class="card shadow-lg border-primary d-none position-fixed bottom-0 start-0 w-100 rounded-top" style="z-index: 9999; height: 85vh; overflow-y: auto; background-color: #fff;">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center sticky-top">
                     <span><i class="bi bi-pencil-square"></i> Kerjakan Tugas</span>
                     <button type="button" class="btn-close btn-close-white" onclick="closeSubmission()"></button>
                 </div>
@@ -856,10 +856,10 @@
             document.getElementById('selectedTaskTitle').innerText = title;
             
             const area = document.getElementById('submissionArea');
+            // Force remove d-none and apply style
             area.classList.remove('d-none');
-            
-            // Pastikan area terlihat dengan z-index tinggi
-            area.style.display = 'block'; 
+            area.style.display = 'block';
+            area.style.zIndex = '9999'; // Ensure top level
         };
 
         // --- 3. Submit Logic (Write to RTDB via REST) ---
