@@ -220,7 +220,19 @@
                         <div class="card">
                             <div class="card-header-custom">
                                 <h5 class="card-title-custom">Laporan Tugas Masuk</h5>
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <select id="filterReportClass" class="form-select form-select-sm" style="width: 130px;">
+                                        <option value="">Semua Kelas</option>
+                                        <option value="VII-A">VII-A</option>
+                                        <option value="VII-B">VII-B</option>
+                                        <option value="VII-C">VII-C</option>
+                                        <option value="VIII-A">VIII-A</option>
+                                        <option value="VIII-B">VIII-B</option>
+                                        <option value="VIII-C">VIII-C</option>
+                                        <option value="IX-A">IX-A</option>
+                                        <option value="IX-B">IX-B</option>
+                                        <option value="IX-C">IX-C</option>
+                                    </select>
                                     <button id="refreshReportsBtn" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
                                     <button class="btn btn-sm btn-success text-white" onclick="exportReports()">
                                         <i class="bi bi-file-earmark-excel"></i> Export Excel
@@ -384,6 +396,12 @@
         // --- REPORTS LOGIC ---
 
         let currentReports = []; // Store for export
+        let allReportsData = {}; // Store for filtering
+
+        // Event listener for filter
+        document.getElementById('filterReportClass').addEventListener('change', () => {
+            renderReports(allReportsData);
+        });
 
         async function loadReports() {
             const tbody = document.getElementById('reportList');
@@ -394,7 +412,8 @@
                 if (!response.ok) throw new Error('Gagal mengambil data laporan');
                 
                 const data = await response.json();
-                renderReports(data);
+                allReportsData = data || {};
+                renderReports(allReportsData);
             } catch (error) {
                 console.error('Error:', error);
                 tbody.innerHTML = `<tr><td colspan="6" class="text-danger text-center">Gagal memuat laporan: ${error.message}</td></tr>`;
@@ -406,13 +425,25 @@
             tbody.innerHTML = '';
             currentReports = [];
             
-            if (!data) {
+            const filterClass = document.getElementById('filterReportClass').value;
+
+            if (!data || Object.keys(data).length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Belum ada laporan masuk.</td></tr>';
                 return;
             }
 
+            let hasData = false;
+
             Object.keys(data).forEach(key => {
                 const log = data[key];
+
+                // Filter Logic
+                if (filterClass) {
+                    const studentClass = log.class || log.kelas || "";
+                    if (studentClass !== filterClass) return;
+                }
+
+                hasData = true;
                 const isCorrected = log.status === 'corrected';
                 const rowClass = isCorrected ? 'table-success' : 'table-warning';
                 const statusBadge = isCorrected 
@@ -442,7 +473,10 @@
 
                 const row = `
                     <tr class="${rowClass}">
-                        <td class="ps-4 fw-bold">${log.studentName || 'Tanpa Nama'}</td>
+                        <td class="ps-4 fw-bold">
+                            ${log.studentName || 'Tanpa Nama'}
+                            <br><small class="text-muted fw-normal">${log.class || log.kelas || '-'}</small>
+                        </td>
                         <td>${log.taskTitle || 'Tugas Umum'}</td>
                         <td>${date}</td>
                         <td>${contentDisplay}</td>
@@ -455,6 +489,10 @@
                 `;
                 tbody.innerHTML += row;
             });
+
+            if (!hasData) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Tidak ada laporan untuk kelas ini.</td></tr>';
+            }
         }
 
         async function toggleReportStatus(id, isCorrected) {
