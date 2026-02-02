@@ -426,7 +426,8 @@
 
                 if (foundStudent) {
                     // Success
-                    sessionStorage.setItem('student_user', JSON.stringify(foundStudent));
+                    // Gunakan localStorage agar sesi bertahan (Persistent Login)
+                    localStorage.setItem('student_user', JSON.stringify(foundStudent));
                     applyStudentData(foundStudent);
                 } else {
                     // Try Case-Insensitive fallback manually (costly but useful for retry)
@@ -763,15 +764,20 @@
             }
         }
 
-        // Logout function (Optional, for testing)
+        // Logout function
         window.logoutStudent = () => {
-            sessionStorage.removeItem('student_user');
+            localStorage.removeItem('student_user');
+            sessionStorage.removeItem('student_user'); // Bersihkan juga session lama jika ada
             location.reload();
         };
 
-        // Check if already logged in
-        const saved = sessionStorage.getItem('student_user');
+        // Check if already logged in (Prioritas localStorage)
+        const saved = localStorage.getItem('student_user') || sessionStorage.getItem('student_user');
         if (saved) {
+            // Migrasi dari session ke local jika perlu
+            if(!localStorage.getItem('student_user')) {
+                 localStorage.setItem('student_user', saved);
+            }
             applyStudentData(JSON.parse(saved));
         }
 
