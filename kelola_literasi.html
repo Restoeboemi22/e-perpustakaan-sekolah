@@ -9,9 +9,69 @@
     <!-- Excel Library -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; overflow-x: hidden; color: #333; }
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --sidebar-width: 260px;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body {
+                background: white !important;
+                font-size: 12px;
+            }
+            #sidebar-wrapper, 
+            .navbar, 
+            .btn, 
+            .card-header-custom div, /* Hide buttons in header */
+            .nav-tabs,
+            .text-end.pe-4, /* Hide Action Column Content */
+            th:last-child, /* Hide Action Column Header */
+            td:last-child, /* Hide Action Column Cell */
+            footer {
+                display: none !important;
+            }
+            #page-content-wrapper {
+                margin-left: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            .card {
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .container-fluid {
+                padding: 0 !important;
+            }
+            .table-responsive {
+                overflow: visible !important;
+            }
+            .card-title-custom {
+                font-size: 18px;
+                text-align: center;
+                margin-bottom: 20px;
+                color: black !important;
+            }
+            .card-title-custom::after {
+                content: " - Dicetak pada " attr(data-print-date);
+                font-size: 12px;
+                font-weight: normal;
+            }
+            /* Show full content in print */
+            td {
+                white-space: normal !important;
+            }
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+            color: #333;
+        }
         
         /* Sidebar Styling */
         #wrapper { display: flex; width: 100%; min-height: 100vh; }
