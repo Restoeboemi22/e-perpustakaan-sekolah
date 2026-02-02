@@ -24,9 +24,39 @@
 
         .menu-label { padding: 0 1.5rem; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1rem; }
         
-        .list-group-item { border: none; padding: 10px 24px; color: #64748b; font-weight: 500; transition: all 0.2s; margin-bottom: 2px; background: transparent; display: flex; align-items: center; gap: 12px; }
-        .list-group-item:hover { background-color: #f1f5f9; color: #2563eb; }
-        .list-group-item.active { background-color: #eff6ff; color: #2563eb; font-weight: 600; border-right: 3px solid #2563eb; border-radius: 0 4px 4px 0; }
+        .sidebar .list-group-item {
+            border: none;
+            padding: 12px 20px;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 12px;
+            margin-left: 12px;
+            margin-right: 12px;
+        }
+
+        .sidebar .list-group-item:hover {
+            background-color: #f1f5f9;
+            color: #2563eb;
+            transform: translateX(4px);
+        }
+
+        .sidebar .list-group-item.active {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            border: none;
+        }
+        
+        .sidebar .list-group-item.active i {
+            color: white !important;
+        }
         .list-group-item i { font-size: 1.1em; }
 
         /* Main Content Styling */
