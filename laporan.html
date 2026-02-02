@@ -139,8 +139,30 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label small text-muted">Bulan</label>
-                                <input type="month" id="monthFilter" class="form-control" onchange="filterData()">
+                                <label class="form-label small text-muted">Periode</label>
+                                <div class="input-group">
+                                    <select id="monthSelect" class="form-select" onchange="filterData()">
+                                        <option value="">Bulan</option>
+                                        <option value="01">Januari</option>
+                                        <option value="02">Februari</option>
+                                        <option value="03">Maret</option>
+                                        <option value="04">April</option>
+                                        <option value="05">Mei</option>
+                                        <option value="06">Juni</option>
+                                        <option value="07">Juli</option>
+                                        <option value="08">Agustus</option>
+                                        <option value="09">September</option>
+                                        <option value="10">Oktober</option>
+                                        <option value="11">November</option>
+                                        <option value="12">Desember</option>
+                                    </select>
+                                    <select id="yearSelect" class="form-select" onchange="filterData()">
+                                        <option value="">Tahun</option>
+                                        <option value="2024">2024</option>
+                                        <option value="2025">2025</option>
+                                        <option value="2026">2026</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label small text-muted">Cari Peminjam/Buku</label>
@@ -193,7 +215,8 @@
 
         function resetFilters() {
             document.getElementById('statusFilter').value = 'all';
-            document.getElementById('monthFilter').value = '';
+            document.getElementById('monthSelect').value = '';
+            document.getElementById('yearSelect').value = '';
             document.getElementById('searchInput').value = '';
             filterData();
         }
@@ -276,7 +299,8 @@
 
         window.filterData = function() {
             const status = document.getElementById('statusFilter').value;
-            const month = document.getElementById('monthFilter').value;
+            const month = document.getElementById('monthSelect').value;
+            const year = document.getElementById('yearSelect').value;
             const search = document.getElementById('searchInput').value.toLowerCase();
 
             const filtered = allLoans.filter(loan => {
@@ -284,12 +308,25 @@
                 const matchSearch = (loan.studentName && loan.studentName.toLowerCase().includes(search)) || 
                                   (loan.bookTitle && loan.bookTitle.toLowerCase().includes(search));
                 
-                let matchMonth = true;
-                if (month) {
-                    matchMonth = loan.loanDate.startsWith(month);
+                let matchDate = true;
+                if (year) {
+                    // Jika tahun dipilih
+                    if (month) {
+                        // Jika bulan juga dipilih, cocokkan YYYY-MM
+                        matchDate = loan.loanDate.startsWith(`${year}-${month}`);
+                    } else {
+                        // Jika hanya tahun dipilih, cocokkan YYYY
+                        matchDate = loan.loanDate.startsWith(year);
+                    }
+                } else if (month) {
+                    // Jika hanya bulan dipilih (tanpa tahun), cocokkan -MM- di mana saja (agak jarang, tapi logicnya bisa disesuaikan)
+                    // Biasanya user pilih tahun dulu. Tapi ok, kita cek substring bulan.
+                    // Format loanDate: YYYY-MM-DD
+                    const loanMonth = loan.loanDate.substring(5, 7);
+                    matchDate = loanMonth === month;
                 }
 
-                return matchStatus && matchSearch && matchMonth;
+                return matchStatus && matchSearch && matchDate;
             });
 
             renderTable(filtered);
