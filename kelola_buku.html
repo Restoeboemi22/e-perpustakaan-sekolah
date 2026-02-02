@@ -95,6 +95,39 @@
         .action-btn.delete { color: #ef4444; background: #fef2f2; }
         .action-btn:hover { transform: translateY(-1px); }
 
+        /* Grid View Styling */
+        .book-card-grid {
+            transition: all 0.3s ease;
+            border: 1px solid #f1f5f9;
+            height: 100%;
+        }
+        .book-card-grid:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border-color: #e2e8f0;
+        }
+        .book-cover-grid {
+            height: 220px;
+            object-fit: cover;
+            width: 100%;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .grid-action-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        .grid-action-btn:hover {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
         @media (max-width: 768px) {
             #sidebar-wrapper { margin-left: -260px; }
             #page-content-wrapper { margin-left: 0; }
@@ -266,12 +299,20 @@
                 <!-- Daftar Buku -->
                 <div class="card-custom">
                     <div class="card-header-custom">
-                         <h5 class="card-title-custom">Daftar Koleksi Buku</h5>
+                         <div class="d-flex align-items-center gap-3">
+                             <h5 class="card-title-custom mb-0">Daftar Koleksi Buku</h5>
+                             <div class="btn-group btn-group-sm">
+                                 <button class="btn btn-outline-primary active" id="btnViewList" title="Tampilan Tabel"><i class="bi bi-list-ul"></i></button>
+                                 <button class="btn btn-outline-primary" id="btnViewGrid" title="Tampilan Katalog"><i class="bi bi-grid-fill"></i></button>
+                             </div>
+                         </div>
                          <div class="d-flex gap-2">
-                             <input type="text" class="form-control form-control-sm" style="width: 200px;" placeholder="Cari buku...">
+                             <input type="text" id="searchInput" class="form-control form-control-sm" style="width: 250px;" placeholder="Cari judul, penulis, kategori...">
                          </div>
                     </div>
-                    <div class="table-responsive">
+                    
+                    <!-- View: Table -->
+                    <div id="bookTableView" class="table-responsive">
                         <table class="table table-custom table-hover align-middle mb-0">
                             <thead>
                                 <tr>
@@ -286,6 +327,11 @@
                                 <tr><td colspan="5" class="text-center py-5 text-muted">Memuat data...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- View: Grid (Catalog) -->
+                    <div id="bookGridView" class="row g-4 p-4 d-none">
+                        <!-- Grid Items will be rendered here -->
                     </div>
                 </div>
             </div>
@@ -496,63 +542,163 @@
             });
         }
 
-        // Load Books
+        // Load Books Logic with Grid Support
+        let allBooksData = []; // Store fetched data
+
         window.loadBooks = async function() {
             const tbody = document.getElementById('bookTableBody');
+            const gridView = document.getElementById('bookGridView');
+            
+            // Show loaders
             tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><div class="spinner-border text-primary"></div></td></tr>';
+            gridView.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>';
 
             try {
                 const q = query(collection(db, "books"), orderBy("createdAt", "desc"));
                 const snapshot = await getDocs(q);
                 
-                tbody.innerHTML = '';
+                allBooksData = []; // Reset data
+                
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Belum ada buku.</td></tr>';
+                    renderEmptyState();
                     return;
                 }
 
                 snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const id = docSnap.id;
-                    const title = data.title || data.judul || "Tanpa Judul";
-                    const author = data.author || data.penulis || "-";
-                    const category = data.category || data.kategori || "Umum";
-                    const categoryDetail = data.categoryDetail ? ` > ${data.categoryDetail}` : '';
-                    const stock = data.stock || 0;
-                    const cover = data.coverUrl || "https://via.placeholder.com/50?text=No+Cover";
-                    const hasPdf = data.pdfUrl ? true : false;
-                    const fileBadge = hasPdf 
-                        ? '<span class="badge-file text-primary"><i class="bi bi-file-earmark-pdf"></i> E-Book</span>' 
-                        : '<span class="badge-file"><i class="bi bi-book"></i> Fisik</span>';
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="ps-4">
-                            <div class="d-flex align-items-center">
-                                <img src="${cover}" class="book-cover-sm me-3">
-                                <div>
-                                    <div class="fw-bold text-dark text-truncate" style="max-width: 250px;">${title}</div>
-                                    <div class="small text-muted">${author}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="small text-secondary fw-medium">${category}</div>
-                        </td>
-                        <td><span class="badge-stock">${stock}</span></td>
-                        <td>${fileBadge}</td>
-                        <td class="text-end pe-4">
-                            <button class="action-btn edit me-1" onclick="alert('Fitur edit akan segera hadir!')"><i class="bi bi-pencil"></i></button>
-                            <button class="action-btn delete" onclick="deleteBook('${id}', '${title.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
+                    allBooksData.push({ id: docSnap.id, ...docSnap.data() });
                 });
+
+                renderBooks(allBooksData); // Render initial data
+
             } catch (error) {
                 console.error("Error loading books:", error);
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data: ${error.message}</td></tr>`;
+                const errorMsg = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data: ${error.message}</td></tr>`;
+                tbody.innerHTML = errorMsg;
+                gridView.innerHTML = `<div class="col-12 text-center text-danger py-4">Gagal memuat data: ${error.message}</div>`;
             }
         };
+
+        function renderEmptyState() {
+             const tbody = document.getElementById('bookTableBody');
+             const gridView = document.getElementById('bookGridView');
+             tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Belum ada buku.</td></tr>';
+             gridView.innerHTML = '<div class="col-12 text-center py-5 text-muted">Belum ada buku.</div>';
+        }
+
+        function renderBooks(books) {
+            const tbody = document.getElementById('bookTableBody');
+            const gridView = document.getElementById('bookGridView');
+            
+            tbody.innerHTML = '';
+            gridView.innerHTML = '';
+
+            if (books.length === 0) {
+                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Tidak ditemukan buku yang sesuai.</td></tr>';
+                 gridView.innerHTML = '<div class="col-12 text-center py-5 text-muted">Tidak ditemukan buku yang sesuai.</div>';
+                 return;
+            }
+
+            books.forEach(data => {
+                const id = data.id;
+                const title = data.title || data.judul || "Tanpa Judul";
+                const author = data.author || data.penulis || "-";
+                const category = data.category || data.kategori || "Umum";
+                const stock = data.stock || 0;
+                const cover = data.coverUrl || "https://via.placeholder.com/150x220?text=No+Cover";
+                const hasPdf = data.pdfUrl ? true : false;
+                
+                // Render Table Row
+                const fileBadge = hasPdf 
+                    ? '<span class="badge-file text-primary"><i class="bi bi-file-earmark-pdf"></i> E-Book</span>' 
+                    : '<span class="badge-file"><i class="bi bi-book"></i> Fisik</span>';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                            <img src="${cover}" class="book-cover-sm me-3" loading="lazy">
+                            <div>
+                                <div class="fw-bold text-dark text-truncate" style="max-width: 250px;" title="${title}">${title}</div>
+                                <div class="small text-muted">${author}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="small text-secondary fw-medium text-truncate" style="max-width: 200px;" title="${category}">${category}</div>
+                    </td>
+                    <td><span class="badge-stock">${stock}</span></td>
+                    <td>${fileBadge}</td>
+                    <td class="text-end pe-4">
+                        <button class="action-btn edit me-1" onclick="alert('Fitur edit akan segera hadir!')"><i class="bi bi-pencil"></i></button>
+                        <button class="action-btn delete" onclick="deleteBook('${id}', '${title.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                // Render Grid Item
+                const col = document.createElement('div');
+                col.className = 'col-6 col-md-4 col-lg-3';
+                col.innerHTML = `
+                    <div class="card h-100 book-card-grid">
+                        <div class="position-relative">
+                             <img src="${cover}" class="card-img-top book-cover-grid" alt="${title}" loading="lazy">
+                             <div class="position-absolute top-0 end-0 p-2">
+                                 <span class="badge ${stock > 0 ? 'bg-success' : 'bg-danger'} shadow-sm">
+                                     ${stock > 0 ? stock + ' Stok' : 'Habis'}
+                                 </span>
+                             </div>
+                        </div>
+                        <div class="card-body p-3 d-flex flex-column">
+                            <h6 class="card-title fw-bold text-dark text-truncate mb-1" title="${title}">${title}</h6>
+                            <p class="card-text small text-muted mb-2 text-truncate">${author}</p>
+                            
+                            <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+                                <span class="badge bg-light text-secondary border fw-normal text-truncate" style="max-width: 100px;">${data.mainCategory || 'Umum'}</span>
+                                <div class="d-flex gap-1">
+                                    <button class="grid-action-btn" onclick="alert('Fitur edit akan segera hadir!')" title="Edit"><i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i></button>
+                                    <button class="grid-action-btn text-danger" onclick="deleteBook('${id}', '${title.replace(/'/g, "\\'")}')" title="Hapus"><i class="bi bi-trash-fill" style="font-size: 0.8rem;"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                gridView.appendChild(col);
+            });
+        }
+
+        // View Toggle Logic
+        const btnViewList = document.getElementById('btnViewList');
+        const btnViewGrid = document.getElementById('btnViewGrid');
+        const tableView = document.getElementById('bookTableView');
+        const gridView = document.getElementById('bookGridView');
+
+        if (btnViewList && btnViewGrid) {
+            btnViewList.addEventListener('click', () => {
+                btnViewList.classList.add('active');
+                btnViewGrid.classList.remove('active');
+                tableView.classList.remove('d-none');
+                gridView.classList.add('d-none');
+            });
+
+            btnViewGrid.addEventListener('click', () => {
+                btnViewGrid.classList.add('active');
+                btnViewList.classList.remove('active');
+                gridView.classList.remove('d-none');
+                tableView.classList.add('d-none');
+            });
+        }
+
+        // Search Logic
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const keyword = e.target.value.toLowerCase();
+            const filteredBooks = allBooksData.filter(book => {
+                const title = (book.title || book.judul || "").toLowerCase();
+                const author = (book.author || book.penulis || "").toLowerCase();
+                const category = (book.category || book.kategori || "").toLowerCase();
+                return title.includes(keyword) || author.includes(keyword) || category.includes(keyword);
+            });
+            renderBooks(filteredBooks);
+        });
 
         // Add Book
         document.getElementById('addBookForm').addEventListener('submit', async (e) => {
