@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Firestore Data</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .log { background: #f0f0f0; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; }
+        .btn { padding: 5px 10px; cursor: pointer; background: #007bff; color: white; border: none; }
+        .btn-danger { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>Fix Firestore Data for APK</h1>
+    <div id="status">Connecting...</div>
+    <div id="results"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
+            authDomain: "eperpus-sekolah.firebaseapp.com",
+            projectId: "eperpus-sekolah",
+            storageBucket: "eperpus-sekolah.firebasestorage.app",
+            messagingSenderId: "303647816343",
+            appId: "1:303647816343:web:78ad36d2d1be25930547d2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const resultsDiv = document.getElementById('results');
+
+        const collectionsToCheck = ["literacy_logs", "literacy_reports", "submissions", "reports"];
+
+        async function scanAndFix() {
+            resultsDiv.innerHTML = "";
+            
+            for (const colName of collectionsToCheck) {
+                const colRef = collection(db, colName);
+                try {
+                    const snapshot = await getDocs(colRef);
+                    if (!snapshot.empty) {
+                        const div = document.createElement('div');
+                        div.className = 'log';
+                        div.innerHTML = `<h3>Collection: ${colName} (${snapshot.size} docs)</h3>`;
+                        
+                        snapshot.forEach(d => {
+                            const data = d.data();
+                            const title = data.bookTitle || data.title || "No Title";
+                            const student = data.studentName || data.name || "No Name";
+                            
+                            let actionHtml = "";
+                            
+                            // Check for Smoke Test
+                            if (title.toUpperCase().includes("SMOKE") || title.toUpperCase().includes("TEST") || student === "smoke.test") {
+                                actionHtml += `<button class="btn btn-danger" onclick="deleteDocument('${colName}', '${d.id}')">Delete Dummy (${title})</button> `;
+                            }
+
+                            // Check for Firebase User / Wayang
+                            if (title.toLowerCase().includes("wayang") || student === "Firebase User") {
+                                actionHtml += `<button class="btn" onclick="fixMiko('${colName}', '${d.id}')">Fix 'Miko' Name</button>`;
+                            }
+
+                            div.innerHTML += `
+                                <div style="margin-left: 20px; border-bottom: 1px solid #ddd; padding: 5px;">
+                                    ID: ${d.id} <br>
+                                    Student: <b>${student}</b> <br>
+                                    Title: <b>${title}</b> <br>
+                                    ${actionHtml}
+                                </div>
+                            `;
+                        });
+                        resultsDiv.appendChild(div);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            document.getElementById('status').innerText = "Scan Complete.";
+        }
+
+        window.deleteDocument = async (col, id) => {
+            if(!confirm("Delete this document?")) return;
+            try {
+                await deleteDoc(doc(db, col, id));
+                alert("Deleted!");
+                scanAndFix();
+            } catch(e) { alert(e.message); }
+        };
+
+        window.fixMiko = async (col, id) => {
+            try {
+                await updateDoc(doc(db, col, id), {
+                    studentName: "miko",
+                    name: "miko",
+                    sender: "miko",
+                    displayName: "miko",
+                    userName: "miko"
+                });
+                alert("Fixed name to 'miko'!");
+                scanAndFix();
+            } catch(e) { alert(e.message); }
+        };
+
+        scanAndFix();
+    </script>
+</body>
+</html>
