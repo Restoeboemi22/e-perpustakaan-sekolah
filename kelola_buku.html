@@ -516,23 +516,44 @@
             }
 
             const storageRef = ref(storage, `${folder}/${Date.now()}_${file.name}`);
-            const uploadTask = uploadBytesResumable(storageRef, file);
+            
+            // Tambahkan Metadata agar dikenali server (Mencegah hanging karena validasi rules)
+            const metadata = {
+                contentType: file.type,
+                customMetadata: {
+                    'uploadedBy': 'Admin',
+                    'originalName': file.name
+                }
+            };
+
+            const uploadTask = uploadBytesResumable(storageRef, file, metadata);
             
             return new Promise((resolve, reject) => {
                 let isTimeout = false;
+                let hasProgress = false;
 
                 // Timeout Handler (300 detik / 5 menit)
                 const timeoutTimer = setTimeout(() => {
                     isTimeout = true;
                     uploadTask.cancel();
-                    const timeoutMsg = "Waktu upload habis (5 menit). Koneksi internet mungkin lambat atau file terlalu besar. Silakan coba lagi atau kompres file PDF Anda.";
+                    const timeoutMsg = "Waktu upload habis (5 menit). Koneksi internet mungkin lambat atau file terlalu besar.";
                     alert(timeoutMsg);
                     reject(new Error(timeoutMsg));
                 }, 300000);
 
+                // Stalled Detector (Jika 0% selama 15 detik)
+                const stalledTimer = setTimeout(() => {
+                    if (!hasProgress) {
+                        console.warn("Upload stalled at 0%");
+                        alert("Peringatan: Upload tidak berjalan selama 15 detik. \n\nKemungkinan penyebab:\n1. Masalah CORS (jika domain baru)\n2. Koneksi internet tidak stabil\n3. Firewall memblokir koneksi ke Firebase Storage\n\nSilakan tunggu sebentar atau refresh halaman.");
+                    }
+                }, 15000);
+
                 uploadTask.on('state_changed',
                     (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        if (progress > 0) hasProgress = true;
+                        
                         console.log('Upload is ' + progress + '% done');
                         if (progressId) {
                             const progressBar = document.getElementById(progressId);
@@ -544,7 +565,8 @@
                     },
                     (error) => {
                         clearTimeout(timeoutTimer);
-                        if (isTimeout) return; // Jangan tampilkan error lain jika sudah timeout
+                        clearTimeout(stalledTimer);
+                        if (isTimeout) return; 
 
                         console.error("Upload error:", error);
                         
@@ -569,6 +591,7 @@
                     },
                     async () => {
                         clearTimeout(timeoutTimer);
+                        clearTimeout(stalledTimer);
                         try {
                             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                             if (progressId) {
