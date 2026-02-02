@@ -360,7 +360,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Konfigurasi Database (Firestore)
         const firebaseConfig = {
@@ -924,11 +924,16 @@
             };
 
             try {
-                await fetch(`${DB_URL}/literacy_logs.json`, {
+                // Dual Write: RTDB (Portal) + Firestore (APK)
+                const rtdbPromise = fetch(`${DB_URL}/literacy_logs.json`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
+                const firestorePromise = addDoc(collection(db, "literacy_logs"), payload);
+
+                await Promise.all([rtdbPromise, firestorePromise]);
 
                 // Show success
                 const toast = new bootstrap.Toast(document.getElementById('liveToast'));
@@ -941,6 +946,7 @@
                 
             } catch (err) {
                 alert("Gagal mengirim laporan: " + err.message);
+                console.error("Submission Error:", err);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="bi bi-send-fill"></i> Kirim Laporan';
