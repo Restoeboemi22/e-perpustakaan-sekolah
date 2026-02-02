@@ -93,6 +93,7 @@
         .action-btn { width: 32px; height: 32px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; border: none; background: transparent; transition: all 0.2s; }
         .action-btn.edit { color: #2563eb; background: #eff6ff; }
         .action-btn.delete { color: #ef4444; background: #fef2f2; }
+        .action-btn.read { color: #059669; background: #d1fae5; }
         .action-btn:hover { transform: translateY(-1px); }
 
         /* Grid View Styling */
@@ -271,14 +272,36 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Upload E-Book (PDF)</label>
-                                    <div class="upload-area">
-                                        <input type="file" id="pdfFile" class="form-control mb-2" accept="application/pdf">
-                                        <div class="progress d-none" style="height: 6px;">
-                                            <div id="pdfProgress" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                    <label class="form-label d-flex justify-content-between align-items-center">
+                                        <span>File E-Book (PDF)</span>
+                                        <span class="badge bg-info text-dark border"><i class="bi bi-google"></i> Mode Belajar.id</span>
+                                    </label>
+                                    <div class="upload-area bg-white border-primary shadow-sm">
+                                        <!-- Opsi Utama: Link Drive -->
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-primary mb-1">
+                                                <i class="bi bi-link-45deg"></i> Link Google Drive (Utama)
+                                            </label>
+                                            <input type="url" id="pdfUrl" class="form-control" placeholder="Tempel link file Google Drive di sini...">
+                                            <div class="form-text small text-muted mt-1">
+                                                <i class="bi bi-info-circle-fill text-primary"></i> Pastikan akses file di Drive diatur ke: <strong>"Siapa saja yang memiliki link"</strong>.
+                                            </div>
                                         </div>
-                                        <input type="url" id="pdfUrl" class="form-control mt-2 form-control-sm" placeholder="Atau tempel URL file PDF">
-                                        <div class="file-info">Format PDF, maks 20MB.</div>
+
+                                        <div class="text-center my-2 position-relative">
+                                            <hr class="m-0">
+                                            <span class="position-absolute top-50 start-50 translate-middle px-2 bg-white small text-muted">ATAU</span>
+                                        </div>
+
+                                        <!-- Opsi Cadangan: Upload -->
+                                        <div class="mt-3 opacity-75">
+                                            <label class="form-label small text-secondary mb-1">Upload ke Server (Cadangan)</label>
+                                            <input type="file" id="pdfFile" class="form-control form-control-sm" accept="application/pdf">
+                                            <div class="progress d-none mt-2" style="height: 6px;">
+                                                <div id="pdfProgress" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                            </div>
+                                            <div class="file-info text-danger small mt-1">*Menggunakan kuota server (Terbatas 1GB/hari)</div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -718,6 +741,10 @@
                 const cover = data.coverUrl || "https://via.placeholder.com/150x220?text=No+Cover";
                 const hasPdf = data.pdfUrl ? true : false;
                 
+                // Action Buttons logic
+                const readBtn = hasPdf ? 
+                    `<button class="action-btn read me-1" onclick="window.open('${data.pdfUrl}', '_blank')" title="Baca Buku"><i class="bi bi-eye"></i></button>` : '';
+
                 // Render Table Row
                 const fileBadge = hasPdf 
                     ? '<span class="badge-file text-primary"><i class="bi bi-file-earmark-pdf"></i> E-Book</span>' 
@@ -740,6 +767,7 @@
                     <td><span class="badge-stock">${stock}</span></td>
                     <td>${fileBadge}</td>
                     <td class="text-end pe-4">
+                        ${readBtn}
                         <button class="action-btn edit me-1" onclick="editBook('${id}')"><i class="bi bi-pencil"></i></button>
                         <button class="action-btn delete" onclick="deleteBook('${id}', '${title.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
                     </td>
@@ -747,6 +775,8 @@
                 tbody.appendChild(tr);
 
                 // Render Grid Item
+                const readGridBtn = hasPdf ? `<button class="grid-action-btn text-success" onclick="window.open('${data.pdfUrl}', '_blank')" title="Baca"><i class="bi bi-eye-fill" style="font-size: 0.8rem;"></i></button>` : '';
+
                 const col = document.createElement('div');
                 col.className = 'col-6 col-md-4 col-lg-3';
                 col.innerHTML = `
@@ -766,6 +796,7 @@
                             <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
                                 <span class="badge bg-light text-secondary border fw-normal text-truncate" style="max-width: 100px;">${data.mainCategory || 'Umum'}</span>
                                 <div class="d-flex gap-1">
+                                    ${readGridBtn}
                                     <button class="grid-action-btn" onclick="editBook('${id}')" title="Edit"><i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i></button>
                                     <button class="grid-action-btn text-danger" onclick="deleteBook('${id}', '${title.replace(/'/g, "\\'")}')" title="Hapus"><i class="bi bi-trash-fill" style="font-size: 0.8rem;"></i></button>
                                 </div>
