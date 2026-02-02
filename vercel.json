@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/admin",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/admin/books",
+      "destination": "/kelola_buku.html"
+    },
+    {
+      "source": "/admin/literacy",
+      "destination": "/kelola_literasi.html"
+    },
+    {
       "source": "/login",
       "destination": "/literacy_siswa.html"
     },

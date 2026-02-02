@@ -3,85 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Literasi - Admin (Terkoneksi ke Android)</title>
+    <title>Kelola Literasi - Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; overflow-x: hidden; color: #333; }
+        
+        /* Sidebar Styling */
+        #wrapper { display: flex; width: 100%; min-height: 100vh; }
+        #sidebar-wrapper { width: 260px; background: white; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: all 0.3s; }
+        
+        .sidebar-brand { padding: 1.5rem; display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+        .brand-icon { width: 40px; height: 40px; background: #2563eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
+        .brand-text { font-weight: 700; font-size: 1.25rem; color: #1e293b; line-height: 1.2; }
+        .brand-sub { font-size: 0.75rem; color: #64748b; font-weight: 400; }
+
+        .menu-label { padding: 0 1.5rem; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1rem; }
+        
+        .list-group-item { border: none; padding: 10px 24px; color: #64748b; font-weight: 500; transition: all 0.2s; margin-bottom: 2px; background: transparent; display: flex; align-items: center; gap: 12px; }
+        .list-group-item:hover { background-color: #f1f5f9; color: #2563eb; }
+        .list-group-item.active { background-color: #eff6ff; color: #2563eb; font-weight: 600; border-right: 3px solid #2563eb; border-radius: 0 4px 4px 0; }
+        .list-group-item i { font-size: 1.1em; }
+
+        /* Main Content Styling */
+        #page-content-wrapper { width: 100%; margin-left: 260px; display: flex; flex-direction: column; background: #f8f9fa; }
+        
+        .top-header { padding: 2rem 2.5rem 1rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0; }
+        
+        .main-container { padding: 0 2.5rem 2.5rem 2.5rem; }
+
+        /* Card & Form Styling */
+        .card { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-bottom: 24px; overflow: hidden; }
+        .card-header-custom { padding: 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .card-title-custom { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0; }
+        
+        .form-label { font-size: 0.875rem; font-weight: 500; color: #64748b; margin-bottom: 0.5rem; }
+        .form-control, .form-select { border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.75rem 1rem; font-size: 0.95rem; color: #334155; }
+        .form-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        .table-custom th { background-color: white; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; padding: 1rem 1.5rem; }
+        .table-custom td { padding: 1rem 1.5rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.95rem; }
+
+        @media (max-width: 768px) {
+            #sidebar-wrapper { margin-left: -260px; }
+            #page-content-wrapper { margin-left: 0; }
+            #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
+            .top-header { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.5rem; }
+            .main-container { padding: 0 1.5rem 1.5rem 1.5rem; }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
-            <h1 class="mb-0">📚 Manajemen Literasi (Sinkron ke Android)</h1>
-            <a href="/admin" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
-            </a>
-        </div>
-        
-        <div class="alert alert-success">
-            <strong>Mode Online:</strong> Data yang Anda input di sini akan langsung masuk ke Firebase dan tampil di Aplikasi Siswa (Android).
-        </div>
-
-        <!-- Form Tambah Tugas -->
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                Tambah Tugas Baru (Format Android)
-            </div>
-            <div class="card-body">
-                <form id="addTaskForm">
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Judul Tugas</label>
-                        <input type="text" class="form-control" id="title" required placeholder="Contoh: Resume Buku Laskar Pelangi">
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Deskripsi</label>
-                        <textarea class="form-control" id="description" rows="3" required placeholder="Jelaskan detail tugas..."></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="points" class="form-label">Poin</label>
-                            <input type="number" class="form-control" id="points" value="75" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="duration" class="form-label">Durasi (Menit)</label>
-                            <input type="number" class="form-control" id="duration" value="60" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="deadline" class="form-label">Batas Waktu (Deadline)</label>
-                        <input type="date" class="form-control" id="deadline" required>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100 fw-bold">Kirim ke Aplikasi Siswa</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Daftar Tugas -->
-        <div class="card">
-            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                <span>Daftar Tugas di Firebase</span>
-                <button id="refreshBtn" class="btn btn-sm btn-light">Refresh Data</button>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Judul</th>
-                                <th>Deskripsi</th>
-                                <th>Poin</th>
-                                <th>Durasi</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="taskList">
-                            <tr><td colspan="5" class="text-center">Memuat data dari Firebase...</td></tr>
-                        </tbody>
-                    </table>
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <div class="sidebar-brand">
+                <div class="brand-icon"><i class="bi bi-book"></i></div>
+                <div>
+                    <div class="brand-text">Lentera</div>
+                    <div class="brand-sub">Admin Panel</div>
                 </div>
+            </div>
+            
+            <div class="menu-label">Menu Utama</div>
+            <div class="list-group list-group-flush">
+                <a href="/admin" class="list-group-item list-group-item-action">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+                <a href="/admin/books" class="list-group-item list-group-item-action">
+                    <i class="bi bi-journal-album"></i> Kelola Buku
+                </a>
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Peminjaman akan segera hadir!')">
+                    <i class="bi bi-journal-arrow-up"></i> Peminjaman
+                </a>
+                <a href="/admin/literacy" class="list-group-item list-group-item-action active">
+                    <i class="bi bi-pencil-square"></i> Kelola Literasi
+                </a>
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Data Siswa akan segera hadir!')">
+                    <i class="bi bi-people"></i> Data Siswa
+                </a>
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Statistik akan segera hadir!')">
+                    <i class="bi bi-bar-chart"></i> Statistik Siswa
+                </a>
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Laporan akan segera hadir!')">
+                    <i class="bi bi-file-earmark-text"></i> Laporan
+                </a>
+            </div>
+
+            <div class="menu-label">Lainnya</div>
+            <div class="list-group list-group-flush">
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="bi bi-gear"></i> Pengaturan
+                </a>
+                <a href="/index.html" class="list-group-item list-group-item-action text-danger mt-4">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="top-header">
+                <div>
+                    <h1 class="page-title">Manajemen Literasi</h1>
+                    <p class="text-muted small mb-0">Kelola tugas literasi untuk Aplikasi Siswa</p>
+                </div>
+                <div>
+                    <button class="btn btn-light d-md-none me-2" id="menu-toggle"><i class="bi bi-list"></i></button>
+                    <button class="btn btn-primary" form="addTaskForm" type="submit">
+                        <i class="bi bi-send"></i> Publikasi Tugas
+                    </button>
+                </div>
+            </div>
+
+            <div class="main-container">
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                         <!-- Form Tambah Tugas -->
+                        <div class="card">
+                            <div class="card-header-custom">
+                                <h5 class="card-title-custom">Buat Tugas Baru</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <form id="addTaskForm">
+                                    <div class="mb-3">
+                                        <label for="title" class="form-label">Judul Tugas</label>
+                                        <input type="text" class="form-control" id="title" required placeholder="Contoh: Resume Buku Laskar Pelangi">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Deskripsi</label>
+                                        <textarea class="form-control" id="description" rows="4" required placeholder="Jelaskan detail tugas..."></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="points" class="form-label">Poin</label>
+                                            <input type="number" class="form-control" id="points" value="75" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="duration" class="form-label">Durasi (Menit)</label>
+                                            <input type="number" class="form-control" id="duration" value="60" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="deadline" class="form-label">Batas Waktu</label>
+                                            <input type="date" class="form-control" id="deadline" required>
+                                        </div>
+                                    </div>
+                                    <!-- Hidden submit button triggered by header button -->
+                                    <button type="submit" style="display: none;"></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">Informasi</h6>
+                                <p class="small text-muted mb-0">
+                                    Tugas yang Anda buat di sini akan langsung muncul di <strong>Aplikasi Android Siswa</strong>.
+                                    Pastikan deskripsi jelas agar siswa mudah memahami.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daftar Tugas -->
+                <div class="card">
+                    <div class="card-header-custom">
+                        <h5 class="card-title-custom">Daftar Tugas Aktif</h5>
+                        <button id="refreshBtn" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Judul</th>
+                                    <th>Poin</th>
+                                    <th>Deadline</th>
+                                    <th class="text-end pe-4">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskList">
+                                <tr><td colspan="4" class="text-center py-4 text-muted">Memuat data dari Firebase...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        var el = document.getElementById("wrapper");
+        var toggleButton = document.getElementById("menu-toggle");
+
+        toggleButton.onclick = function () {
+            el.classList.toggle("toggled");
+        };
+    </script>
+    
+    <!-- Use existing main.js for logic, assuming it handles the form IDs correctly -->
     <script type="module" src="/main.js"></script>
 </body>
 </html>

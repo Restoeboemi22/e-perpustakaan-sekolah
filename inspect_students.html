@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title>Inspect Students</title></head>
+<body>
+    <h1>Cek Data Siswa</h1>
+    <pre id="output">Loading...</pre>
+    <script type="module" src="./inspect_students.js"></script>
+    <script>
+        // Override console.log to print to screen
+        const oldLog = console.log;
+        const out = document.getElementById('output');
+        console.log = (...args) => {
+            oldLog(...args);
+            out.innerText += args.join(' ') + '\n';
+        };
+        console.error = (...args) => {
+            out.innerText += 'ERROR: ' + args.join(' ') + '\n';
+        };
+    </script>
+</body>
+</html>

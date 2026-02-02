@@ -7,40 +7,71 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f3f4f6; font-family: 'Inter', 'Segoe UI', sans-serif; overflow-x: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; overflow-x: hidden; color: #333; }
         
         /* Sidebar Styling */
         #wrapper { display: flex; width: 100%; min-height: 100vh; }
-        #sidebar-wrapper { width: 250px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: all 0.3s; }
-        .sidebar-heading { padding: 1.5rem; font-size: 1.25rem; font-weight: bold; color: #4f46e5; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 10px; }
-        .list-group-item { border: none; padding: 12px 25px; color: #4b5563; font-weight: 500; transition: all 0.2s; border-radius: 8px; margin: 4px 12px; }
-        .list-group-item:hover { background-color: #f9fafb; color: #4f46e5; }
-        .list-group-item.active { background-color: #eff6ff; color: #4f46e5; font-weight: 600; border-left: 4px solid #4f46e5; border-radius: 4px; }
-        .list-group-item i { margin-right: 10px; font-size: 1.1em; }
+        #sidebar-wrapper { width: 260px; background: white; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: all 0.3s; }
+        
+        .sidebar-brand { padding: 1.5rem; display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+        .brand-icon { width: 40px; height: 40px; background: #2563eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
+        .brand-text { font-weight: 700; font-size: 1.25rem; color: #1e293b; line-height: 1.2; }
+        .brand-sub { font-size: 0.75rem; color: #64748b; font-weight: 400; }
+
+        .menu-label { padding: 0 1.5rem; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1rem; }
+        
+        .list-group-item { border: none; padding: 10px 24px; color: #64748b; font-weight: 500; transition: all 0.2s; margin-bottom: 2px; background: transparent; display: flex; align-items: center; gap: 12px; }
+        .list-group-item:hover { background-color: #f1f5f9; color: #2563eb; }
+        .list-group-item.active { background-color: #eff6ff; color: #2563eb; font-weight: 600; border-right: 3px solid #2563eb; border-radius: 0 4px 4px 0; }
+        .list-group-item i { font-size: 1.1em; }
 
         /* Main Content Styling */
-        #page-content-wrapper { width: 100%; margin-left: 250px; display: flex; flex-direction: column; }
-        .navbar { background: white; border-bottom: 1px solid #e5e7eb; padding: 1rem 2rem; }
-        .main-container { padding: 2rem; }
-
-        .card { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: white; margin-bottom: 24px; }
-        .card-header { background: white; border-bottom: 1px solid #f3f4f6; padding: 1.25rem; font-weight: 600; color: #111827; }
-        .form-control, .form-select { border-radius: 8px; border: 1px solid #d1d5db; padding: 10px 12px; font-size: 0.95rem; }
-        .form-control:focus, .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-        .btn-primary { background-color: #4f46e5; border-color: #4f46e5; border-radius: 8px; padding: 10px 20px; font-weight: 500; }
-        .btn-primary:hover { background-color: #4338ca; border-color: #4338ca; }
-        .btn-outline-secondary { border-radius: 8px; }
-        .category-badge { font-size: 0.75em; padding: 4px 10px; border-radius: 9999px; background-color: #e0e7ff; color: #4338ca; font-weight: 600; }
+        #page-content-wrapper { width: 100%; margin-left: 260px; display: flex; flex-direction: column; background: #f8f9fa; }
         
+        .top-header { padding: 2rem 2.5rem 1rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0; }
+        
+        .btn-add { background-color: #2563eb; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+        .btn-add:hover { background-color: #1d4ed8; color: white; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
+
+        .main-container { padding: 0 2.5rem 2.5rem 2.5rem; }
+
+        .card { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-bottom: 24px; overflow: hidden; }
+        .card-header-custom { padding: 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .card-title-custom { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0; }
+        
+        .form-label { font-size: 0.875rem; font-weight: 500; color: #64748b; margin-bottom: 0.5rem; }
+        .form-control, .form-select { border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.75rem 1rem; font-size: 0.95rem; color: #334155; }
+        .form-control::placeholder { color: #94a3b8; }
+        .form-control:focus, .form-select:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        .btn-save { background-color: #2563eb; color: white; border: none; border-radius: 8px; padding: 12px; font-weight: 600; width: 100%; margin-top: 1rem; transition: all 0.2s; }
+        .btn-save:hover { background-color: #1d4ed8; }
+
+        /* Upload Area */
+        .upload-area { border: 1px dashed #cbd5e1; border-radius: 8px; padding: 1rem; background: #f8f9fa; }
+        .file-info { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
+
         /* Table Styling */
-        .table thead th { background-color: #f9fafb; color: #6b7280; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb; padding: 12px 16px; }
-        .table td { padding: 16px; vertical-align: middle; border-bottom: 1px solid #f3f4f6; color: #374151; }
-        .table-hover tbody tr:hover { background-color: #f9fafb; }
+        .table-custom th { background-color: white; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; padding: 1rem 1.5rem; }
+        .table-custom td { padding: 1rem 1.5rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.95rem; }
+        .book-cover-sm { width: 40px; height: 56px; border-radius: 4px; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .badge-stock { color: #ef4444; font-weight: 600; }
+        .badge-file { background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; border: 1px solid #e2e8f0; }
+        
+        .action-btn { width: 32px; height: 32px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; border: none; background: transparent; transition: all 0.2s; }
+        .action-btn.edit { color: #2563eb; background: #eff6ff; }
+        .action-btn.delete { color: #ef4444; background: #fef2f2; }
+        .action-btn:hover { transform: translateY(-1px); }
 
         @media (max-width: 768px) {
-            #sidebar-wrapper { margin-left: -250px; }
+            #sidebar-wrapper { margin-left: -260px; }
             #page-content-wrapper { margin-left: 0; }
             #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
+            .top-header { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.5rem; }
+            .main-container { padding: 0 1.5rem 1.5rem 1.5rem; }
         }
     </style>
 </head>
@@ -48,157 +79,171 @@
     <div id="wrapper">
         <!-- Sidebar -->
         <div id="sidebar-wrapper">
-            <div class="sidebar-heading">
-                <i class="bi bi-book-half"></i> E-Perpustakaan
+            <div class="sidebar-brand">
+                <div class="brand-icon"><i class="bi bi-book"></i></div>
+                <div>
+                    <div class="brand-text">Lentera</div>
+                    <div class="brand-sub">Admin Panel</div>
+                </div>
             </div>
-            <div class="list-group list-group-flush mt-3">
-                <a href="/index.html" class="list-group-item list-group-item-action">
-                    <i class="bi bi-speedometer2"></i> Dashboard
+            
+            <div class="menu-label">Menu Utama</div>
+            <div class="list-group list-group-flush">
+                <a href="/admin" class="list-group-item list-group-item-action">
+                    <i class="bi bi-house"></i> Dashboard
                 </a>
-                <a href="#" class="list-group-item list-group-item-action active">
-                    <i class="bi bi-journal-bookmark"></i> Kelola Buku
+                <a href="/admin/books" class="list-group-item list-group-item-action active">
+                    <i class="bi bi-journal-album"></i> Kelola Buku
                 </a>
-                <a href="/kelola_literasi.html" class="list-group-item list-group-item-action">
-                    <i class="bi bi-pencil-square"></i> Tugas Literasi
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Peminjaman akan segera hadir!')">
+                    <i class="bi bi-journal-arrow-up"></i> Peminjaman
                 </a>
-                <a href="#" class="list-group-item list-group-item-action disabled">
+                <a href="/admin/literacy" class="list-group-item list-group-item-action">
+                    <i class="bi bi-pencil-square"></i> Kelola Literasi
+                </a>
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Data Siswa akan segera hadir!')">
                     <i class="bi bi-people"></i> Data Siswa
                 </a>
-                <a href="#" class="list-group-item list-group-item-action disabled">
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Statistik akan segera hadir!')">
+                    <i class="bi bi-bar-chart"></i> Statistik Siswa
+                </a>
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Laporan akan segera hadir!')">
                     <i class="bi bi-file-earmark-text"></i> Laporan
                 </a>
             </div>
-            <div class="mt-auto p-3 border-top">
-                <a href="/index.html" class="d-flex align-items-center text-decoration-none text-secondary">
-                    <i class="bi bi-box-arrow-left me-2"></i> Keluar
+
+            <div class="menu-label">Lainnya</div>
+            <div class="list-group list-group-flush">
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="bi bi-gear"></i> Pengaturan
                 </a>
             </div>
         </div>
 
         <!-- Page Content -->
         <div id="page-content-wrapper">
-            <!-- Top Navbar -->
-            <nav class="navbar navbar-light bg-white">
-                <div class="container-fluid">
-                    <button class="btn btn-light d-md-none" id="menu-toggle"><i class="bi bi-list"></i></button>
-                    <span class="navbar-brand ms-2 fw-bold text-secondary">Manajemen Katalog Buku</span>
-                    <div class="d-flex align-items-center">
-                        <div class="me-3 text-end d-none d-md-block">
-                            <div class="fw-bold small">Admin Perpustakaan</div>
-                            <div class="text-muted" style="font-size: 0.8rem;">admin@sekolah.sch.id</div>
-                        </div>
-                        <img src="https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff" class="rounded-circle" width="40" height="40">
-                    </div>
+            <div class="top-header">
+                <div>
+                    <h1 class="page-title">Kelola Buku</h1>
                 </div>
-            </nav>
-
-            <div class="main-container">
-                <div class="row">
-                    <!-- Form Tambah Buku -->
-                    <div class="col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <i class="bi bi-plus-circle me-2"></i>Tambah Buku Baru
-                            </div>
-                            <div class="card-body">
-                        <form id="addBookForm">
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">Judul Buku</label>
-                                <input type="text" id="title" class="form-control" placeholder="Contoh: Laskar Pelangi" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">Penulis</label>
-                                <input type="text" id="author" class="form-control" placeholder="Nama Penulis" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">Kategori</label>
-                                <select id="category" class="form-select" required>
-                                    <option value="" selected disabled>Pilih Kategori...</option>
-                                    <option value="FIKSI & SASTRA > Novel">Fiksi & Sastra > Novel</option>
-                                    <option value="FIKSI & SASTRA > Cerpen">Fiksi & Sastra > Cerpen</option>
-                                    <option value="BUKU PELAJARAN > Matematika">Buku Pelajaran > Matematika</option>
-                                    <option value="BUKU PELAJARAN > IPA">Buku Pelajaran > IPA</option>
-                                    <option value="BUKU PELAJARAN > IPS">Buku Pelajaran > IPS</option>
-                                    <option value="BUKU PELAJARAN > Bahasa">Buku Pelajaran > Bahasa</option>
-                                    <option value="NON-FIKSI > Biografi">Non-Fiksi > Biografi</option>
-                                    <option value="NON-FIKSI > Sejarah">Non-Fiksi > Sejarah</option>
-                                    <option value="PENGEMBANGAN DIRI > Motivasi">Pengembangan Diri > Motivasi</option>
-                                    <option value="MINAT > Musik">Minat > Musik</option>
-                                    <option value="MINAT > Olahraga">Minat > Olahraga</option>
-                                    <option value="MAJALAH > Sekolah">Majalah > Sekolah</option>
-                                    <option value="LAINNYA > Umum">Lainnya > Umum</option>
-                                </select>
-                                <div class="form-text">Format: KATEGORI UTAMA > Sub Kategori</div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">Detail Kategori (Opsional)</label>
-                                <input type="text" id="categoryDetail" class="form-control" placeholder="Contoh: Novel Inspiratif / Teenlit">
-                                <div class="form-text">Contoh: "Novel Remaja (Teenlit)"</div>
-                            </div>
-                            <div class="row">
-                                <div class="col-6 mb-3">
-                                    <label class="form-label small fw-bold text-secondary">Tahun</label>
-                                    <input type="number" id="year" class="form-control" placeholder="2024">
-                                </div>
-                                <div class="col-6 mb-3">
-                                    <label class="form-label small fw-bold text-secondary">Stok</label>
-                                    <input type="number" id="stock" class="form-control" value="1">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">Deskripsi</label>
-                                <textarea id="description" class="form-control" rows="3" placeholder="Sinopsis singkat..."></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">Cover Buku</label>
-                                <input type="file" id="coverFile" class="form-control" accept="image/*">
-                                <div class="progress mt-2 d-none" style="height: 15px;">
-                                    <div id="coverProgress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
-                                </div>
-                                <input type="url" id="coverUrl" class="form-control mt-2" placeholder="Atau masukkan URL Cover Gambar">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">File PDF (E-Book)</label>
-                                <input type="file" id="pdfFile" class="form-control" accept="application/pdf">
-                                <div class="progress mt-2 d-none" style="height: 15px;">
-                                    <div id="pdfProgress" class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: 0%"></div>
-                                </div>
-                                <input type="url" id="pdfUrl" class="form-control mt-2" placeholder="Atau masukkan URL File PDF">
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <span id="btnText">Simpan Buku</span>
-                                <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"></span>
-                            </button>
-                        </form>
-                    </div>
+                <div>
+                    <button class="btn btn-light d-md-none me-2" id="menu-toggle"><i class="bi bi-list"></i></button>
+                    <button class="btn-add" type="button" data-bs-toggle="collapse" data-bs-target="#addBookCard" aria-expanded="true">
+                        <i class="bi bi-plus-lg"></i> Tambah Buku
+                    </button>
                 </div>
             </div>
 
-            <!-- Daftar Buku -->
-            <div class="col-lg-8">
-                <div class="card h-100">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0 fw-bold"><i class="bi bi-list-ul"></i> Daftar Buku</h5>
-                        <button onclick="loadBooks()" class="btn btn-sm btn-light border"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-light">
-                                    <tr>
-                                        <th class="ps-4">Buku</th>
-                                        <th>Kategori</th>
-                                        <th>Stok</th>
-                                        <th class="text-end pe-4">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bookTableBody">
-                                    <tr><td colspan="4" class="text-center py-5 text-muted">Memuat data...</td></tr>
-                                </tbody>
-                            </table>
+            <div class="main-container">
+                <!-- Form Tambah Buku (Collapsible) -->
+                <div class="collapse show" id="addBookCard">
+                    <div class="card">
+                        <div class="card-header-custom">
+                            <h5 class="card-title-custom">Tambah Buku Baru</h5>
+                            <button type="button" class="btn-close" data-bs-toggle="collapse" data-bs-target="#addBookCard" aria-label="Close"></button>
+                        </div>
+                        <div class="card-body p-4">
+                            <form id="addBookForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Judul Buku</label>
+                                            <input type="text" id="title" class="form-control" placeholder="Masukkan judul buku" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Kategori</label>
+                                            <select id="category" class="form-select" required>
+                                                <option value="" selected disabled>Pilih Kategori Utama</option>
+                                                <option value="FIKSI & SASTRA > Novel">Fiksi & Sastra > Novel</option>
+                                                <option value="FIKSI & SASTRA > Cerpen">Fiksi & Sastra > Cerpen</option>
+                                                <option value="BUKU PELAJARAN > Matematika">Buku Pelajaran > Matematika</option>
+                                                <option value="BUKU PELAJARAN > IPA">Buku Pelajaran > IPA</option>
+                                                <option value="BUKU PELAJARAN > IPS">Buku Pelajaran > IPS</option>
+                                                <option value="BUKU PELAJARAN > Bahasa">Buku Pelajaran > Bahasa</option>
+                                                <option value="NON-FIKSI > Biografi">Non-Fiksi > Biografi</option>
+                                                <option value="NON-FIKSI > Sejarah">Non-Fiksi > Sejarah</option>
+                                                <option value="PENGEMBANGAN DIRI > Motivasi">Pengembangan Diri > Motivasi</option>
+                                                <option value="MINAT > Musik">Minat > Musik</option>
+                                                <option value="MINAT > Olahraga">Minat > Olahraga</option>
+                                                <option value="MAJALAH > Sekolah">Majalah > Sekolah</option>
+                                                <option value="LAINNYA > Umum">Lainnya > Umum</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Detail Kategori (Opsional)</label>
+                                            <input type="text" id="categoryDetail" class="form-control" placeholder="Contoh: Novel Inspiratif">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Penulis</label>
+                                            <input type="text" id="author" class="form-control" placeholder="Nama Penulis" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Tahun Terbit</label>
+                                            <input type="number" id="year" class="form-control" placeholder="2024">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Jumlah Stok</label>
+                                            <input type="number" id="stock" class="form-control" value="1">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Upload Cover</label>
+                                    <div class="upload-area">
+                                        <input type="file" id="coverFile" class="form-control mb-2" accept="image/*">
+                                        <div class="progress d-none" style="height: 6px;">
+                                            <div id="coverProgress" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <input type="url" id="coverUrl" class="form-control mt-2 form-control-sm" placeholder="Atau tempel URL gambar cover">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Upload E-Book (PDF)</label>
+                                    <div class="upload-area">
+                                        <input type="file" id="pdfFile" class="form-control mb-2" accept="application/pdf">
+                                        <div class="progress d-none" style="height: 6px;">
+                                            <div id="pdfProgress" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <input type="url" id="pdfUrl" class="form-control mt-2 form-control-sm" placeholder="Atau tempel URL file PDF">
+                                        <div class="file-info">Format PDF, maks 20MB.</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Deskripsi</label>
+                                    <textarea id="description" class="form-control" rows="3" placeholder="Sinopsis singkat..."></textarea>
+                                </div>
+
+                                <button type="submit" class="btn-save">
+                                    <span id="btnText">Simpan Buku</span>
+                                    <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"></span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
+
+                <!-- Daftar Buku -->
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4" style="width: 40%;">Buku</th>
+                                    <th style="width: 30%;">Kategori</th>
+                                    <th style="width: 10%;">Stok</th>
+                                    <th style="width: 10%;">File</th>
+                                    <th class="text-end pe-4" style="width: 10%;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookTableBody">
+                                <tr><td colspan="5" class="text-center py-5 text-muted">Memuat data...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -309,7 +354,7 @@
         // Load Books
         window.loadBooks = async function() {
             const tbody = document.getElementById('bookTableBody');
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted"><div class="spinner-border text-primary"></div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><div class="spinner-border text-primary"></div></td></tr>';
 
             try {
                 const q = query(collection(db, "books"), orderBy("createdAt", "desc"));
@@ -317,7 +362,7 @@
                 
                 tbody.innerHTML = '';
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">Belum ada buku.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Belum ada buku.</td></tr>';
                     return;
                 }
 
@@ -327,31 +372,40 @@
                     const title = data.title || data.judul || "Tanpa Judul";
                     const author = data.author || data.penulis || "-";
                     const category = data.category || data.kategori || "Umum";
+                    const categoryDetail = data.categoryDetail ? ` > ${data.categoryDetail}` : '';
                     const stock = data.stock || 0;
                     const cover = data.coverUrl || "https://via.placeholder.com/50?text=No+Cover";
+                    const hasPdf = data.pdfUrl ? true : false;
+                    const fileBadge = hasPdf 
+                        ? '<span class="badge-file text-primary"><i class="bi bi-file-earmark-pdf"></i> E-Book</span>' 
+                        : '<span class="badge-file"><i class="bi bi-book"></i> Fisik</span>';
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td class="ps-4">
                             <div class="d-flex align-items-center">
-                                <img src="${cover}" class="rounded me-3 border" width="40" height="50" style="object-fit: cover;">
+                                <img src="${cover}" class="book-cover-sm me-3">
                                 <div>
-                                    <div class="fw-bold text-dark">${title}</div>
+                                    <div class="fw-bold text-dark text-truncate" style="max-width: 250px;">${title}</div>
                                     <div class="small text-muted">${author}</div>
                                 </div>
                             </div>
                         </td>
-                        <td><span class="badge bg-light text-secondary border category-badge">${category}</span></td>
-                        <td>${stock > 0 ? `<span class="badge bg-success-subtle text-success">${stock} Tersedia</span>` : '<span class="badge bg-danger-subtle text-danger">Habis</span>'}</td>
+                        <td>
+                            <div class="small text-secondary fw-medium">${category}</div>
+                        </td>
+                        <td><span class="badge-stock">${stock}</span></td>
+                        <td>${fileBadge}</td>
                         <td class="text-end pe-4">
-                            <button onclick="deleteBook('${id}', '${title}')" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            <button class="action-btn edit me-1" onclick="alert('Fitur edit akan segera hadir!')"><i class="bi bi-pencil"></i></button>
+                            <button class="action-btn delete" onclick="deleteBook('${id}', '${title.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             } catch (error) {
                 console.error("Error loading books:", error);
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Gagal memuat data: ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data: ${error.message}</td></tr>`;
             }
         };
 
@@ -388,16 +442,21 @@
                 btnText.textContent = 'Menyimpan Data...';
 
                 // Handle Category Detail
-                let category = document.getElementById('category').value;
+                let categoryInput = document.getElementById('category').value;
                 const detail = document.getElementById('categoryDetail').value.trim();
+                
+                // Simpan kategori lengkap untuk display string
+                let fullCategory = categoryInput;
                 if (detail) {
-                    category += ` > ${detail}`;
+                    fullCategory += ` > ${detail}`;
                 }
 
                 const bookData = {
                     title: document.getElementById('title').value,
                     author: document.getElementById('author').value,
-                    category: category,
+                    category: fullCategory, // Kompatibilitas backward
+                    mainCategory: categoryInput, // Kategori dasar
+                    categoryDetail: detail, // Detail spesifik
                     year: parseInt(document.getElementById('year').value) || new Date().getFullYear(),
                     stock: parseInt(document.getElementById('stock').value) || 0,
                     description: document.getElementById('description').value,
