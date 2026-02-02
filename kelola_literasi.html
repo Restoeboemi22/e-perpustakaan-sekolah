@@ -358,6 +358,31 @@
 
                     <!-- Tab Riwayat -->
                     <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+                        
+                        <!-- Class Stats Summary (Hidden by default) -->
+                        <div id="classStatsCard" class="card-custom mb-3 d-none bg-primary text-white" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                            <div class="card-body p-3">
+                                <div class="row align-items-center text-center">
+                                    <div class="col-md-3 border-end border-white-50">
+                                        <h6 class="text-white-50 mb-1">KELAS</h6>
+                                        <h4 class="fw-bold mb-0" id="statsClassName">-</h4>
+                                    </div>
+                                    <div class="col-md-3 border-end border-white-50">
+                                        <h6 class="text-white-50 mb-1">TOTAL SISWA</h6>
+                                        <h4 class="fw-bold mb-0" id="statsTotalStudents">-</h4>
+                                    </div>
+                                    <div class="col-md-3 border-end border-white-50">
+                                        <h6 class="text-white-50 mb-1">SUDAH MENGUMPULKAN</h6>
+                                        <h4 class="fw-bold mb-0 text-white" id="statsSubmitted">-</h4>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h6 class="text-white-50 mb-1">BELUM MENGUMPULKAN</h6>
+                                        <h4 class="fw-bold mb-0 text-warning" id="statsNotSubmitted">-</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="card-custom">
                             <div class="card-header-custom">
                                 <h5 class="card-title-custom">Riwayat Penilaian</h5>
@@ -417,6 +442,21 @@
     </script>
     
     <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
+            authDomain: "eperpus-sekolah.firebaseapp.com",
+            projectId: "eperpus-sekolah",
+            storageBucket: "eperpus-sekolah.firebasestorage.app",
+            messagingSenderId: "303647816343",
+            appId: "1:303647816343:web:78ad36d2d1be25930547d2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // URL Database Firebase
         const DATABASE_URL = "https://smpn3pacet-app-default-rtdb.asia-southeast1.firebasedatabase.app";
         const TASKS_ENDPOINT = "/literacy_tasks.json";
@@ -568,11 +608,69 @@
 
         // Event listener for filters
         document.getElementById('filterReportClass').addEventListener('change', () => renderReports(allReportsData));
-        document.getElementById('filterHistoryClass').addEventListener('change', () => renderReports(allReportsData));
+        document.getElementById('filterHistoryClass').addEventListener('change', async (e) => {
+            renderReports(allReportsData);
+            await updateClassStats(e.target.value);
+        });
         
         // Refresh Button Logic
         document.getElementById('refreshReportsBtn').addEventListener('click', loadReports);
-        document.getElementById('refreshHistoryBtn').addEventListener('click', loadReports);
+        document.getElementById('refreshHistoryBtn').addEventListener('click', () => {
+            loadReports();
+            const currentFilter = document.getElementById('filterHistoryClass').value;
+            if(currentFilter) updateClassStats(currentFilter);
+        });
+
+        // --- NEW STATS LOGIC ---
+        async function updateClassStats(className) {
+            const statsCard = document.getElementById('classStatsCard');
+            
+            if (!className) {
+                statsCard.classList.add('d-none');
+                return;
+            }
+
+            // Show loading state
+            statsCard.classList.remove('d-none');
+            document.getElementById('statsClassName').innerText = className;
+            document.getElementById('statsTotalStudents').innerText = "...";
+            document.getElementById('statsSubmitted').innerText = "...";
+            document.getElementById('statsNotSubmitted').innerText = "...";
+
+            try {
+                // 1. Get Total Students from Firestore
+                const coll = collection(db, "students");
+                const q = query(coll, where("class", "==", className));
+                const snapshot = await getCountFromServer(q);
+                const totalStudents = snapshot.data().count;
+
+                // 2. Get Submitted Count (Unique Students) from Loaded Reports
+                // We use allReportsData which contains ALL logs (history + pending)
+                const uniqueSubmitters = new Set();
+                
+                Object.values(allReportsData).forEach(log => {
+                    const logClass = log.class || log.kelas;
+                    // Check if log belongs to this class
+                    if (logClass === className) {
+                        // Use name or studentId as unique identifier
+                        const identifier = log.studentName || log.name || log.studentId;
+                        if (identifier) uniqueSubmitters.add(identifier);
+                    }
+                });
+                
+                const submittedCount = uniqueSubmitters.size;
+                const notSubmittedCount = Math.max(0, totalStudents - submittedCount);
+
+                // 3. Update UI
+                document.getElementById('statsTotalStudents').innerText = totalStudents;
+                document.getElementById('statsSubmitted').innerText = submittedCount;
+                document.getElementById('statsNotSubmitted').innerText = notSubmittedCount;
+
+            } catch (error) {
+                console.error("Error fetching stats:", error);
+                document.getElementById('statsTotalStudents').innerText = "-";
+            }
+        }
 
         async function loadReports() {
             const reportBody = document.getElementById('reportList');
@@ -635,7 +733,7 @@
                 const rawDate = log.timestamp || log.submissionDate || log.createdAt;
                 const date = rawDate ? new Date(rawDate).toLocaleString('id-ID') : '-';
                 
-                // Fields mapping
+                // Fields mapping with Fallbacks
                 let studentNameDisplay = log.studentName || log.name || log.displayName || log.userName || log.sender;
                 
                 // Fallback if name is missing but studentId exists
@@ -646,10 +744,13 @@
                     studentNameDisplay = 'Tanpa Nama';
                 }
                 
-                // Extra check for "Firebase User"
-                if (studentNameDisplay === 'Firebase User' && log.studentId) {
-                     studentNameDisplay = `Siswa ID: ${log.studentId}`;
+                // Extra check for "Firebase User" - strictly avoid showing this generic name
+                if (studentNameDisplay === 'Firebase User') {
+                     studentNameDisplay = log.studentId ? `Siswa ID: ${log.studentId}` : 'Tanpa Nama';
                 }
+
+                // Class mapping
+                let classNameDisplay = log.class || log.kelas || '-';
                 
                 let bookTitleDisplay = log.bookTitle || '-';
                 let authorDisplay = log.bookAuthor || log.author || '-';
@@ -668,7 +769,7 @@
                     <tr class="${rowClass}">
                         <td class="ps-4 fw-bold">
                             ${studentNameDisplay}
-                            <br><small class="text-muted fw-normal">${log.class || log.kelas || '-'}</small>
+                            <br><small class="text-muted fw-normal">${classNameDisplay}</small>
                         </td>
                         <td>${bookTitleDisplay}</td>
                         <td>${authorDisplay}</td>
@@ -682,23 +783,29 @@
                     </tr>
                 `;
 
-                // Add to Current Reports for Export
+                // Add to Current Reports for Export (Store processed values)
                 currentReports.push({
                     id: key,
                     ...log,
-                    status: isCorrected ? 'Sudah Dikoreksi' : 'Belum Dikoreksi',
-                    dateFormatted: rawDate ? new Date(rawDate).toLocaleDateString('id-ID') : '-'
+                    // Store processed display values to ensure Export matches Table
+                    _studentNameDisplay: studentNameDisplay,
+                    _classNameDisplay: classNameDisplay,
+                    _bookTitleDisplay: bookTitleDisplay,
+                    _authorDisplay: authorDisplay,
+                    _summaryDisplay: summaryDisplay,
+                    _statusDisplay: isCorrected ? 'Sudah Dikoreksi' : 'Belum Dikoreksi',
+                    _dateFormatted: rawDate ? new Date(rawDate).toLocaleDateString('id-ID') : '-'
                 });
 
                 // Logic Distribution
                 if (isCorrected) {
                     // History Logic
-                    if (filterHistory && (log.class || log.kelas || "") !== filterHistory) return;
+                    if (filterHistory && classNameDisplay !== filterHistory) return;
                     historyBody.innerHTML += rowHtml;
                     hasHistoryData = true;
                 } else {
                     // Report Logic (Perlu Dinilai)
-                    if (filterReport && (log.class || log.kelas || "") !== filterReport) return;
+                    if (filterReport && classNameDisplay !== filterReport) return;
                     reportBody.innerHTML += rowHtml;
                     hasReportData = true;
                 }
@@ -756,12 +863,14 @@
             }
 
             const dataToExport = currentReports.map(item => ({
-                "Nama Siswa": item.studentName,
+                "Nama Siswa": item._studentNameDisplay,
+                "Kelas": item._classNameDisplay,
                 "Judul Tugas": item.taskTitle,
-                "Judul Buku": item.bookTitle || '-',
-                "Ringkasan/Isi": item.summary || item.content || '-',
-                "Tanggal Kirim": item.dateFormatted,
-                "Status": item.status,
+                "Judul Buku": item._bookTitleDisplay,
+                "Penulis": item._authorDisplay,
+                "Ringkasan/Isi": item._summaryDisplay,
+                "Tanggal Kirim": item._dateFormatted,
+                "Status": item._statusDisplay,
                 "Waktu Lengkap": item.timestamp ? new Date(item.timestamp).toLocaleString('id-ID') : ''
             }));
 
