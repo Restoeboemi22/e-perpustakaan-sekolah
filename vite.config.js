@@ -35,6 +35,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        main: resolve(__dirname, 'index.html'),
         literasi: resolve(__dirname, 'kelola_literasi.html'),
         siswa: resolve(__dirname, 'literacy_siswa.html'),
         buku: resolve(__dirname, 'kelola_buku.html'),
