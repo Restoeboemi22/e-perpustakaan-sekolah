@@ -291,6 +291,51 @@
         </div>
     </div>
 
+    <!-- Modal Detail Buku -->
+    <div class="modal fade" id="bookDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-body p-0">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3 bg-white shadow-sm p-2" data-bs-dismiss="modal" style="z-index: 10; opacity: 1;"></button>
+                    <div class="position-relative" style="height: 250px; background: #eee;">
+                        <img id="modalBookCover" src="" class="w-100 h-100 object-fit-cover" alt="Cover">
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                            <span id="modalBookCategory" class="badge bg-primary mb-2"></span>
+                            <h4 id="modalBookTitle" class="text-white fw-bold mb-0 text-shadow"></h4>
+                            <p id="modalBookAuthor" class="text-white-50 mb-0"></p>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <small class="text-muted d-block">Tahun Terbit</small>
+                                <strong id="modalBookYear">-</strong>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Stok</small>
+                                <strong id="modalBookStock">-</strong>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Rak</small>
+                                <strong>A-01</strong>
+                            </div>
+                        </div>
+                        
+                        <h6 class="fw-bold">Sinopsis</h6>
+                        <p id="modalBookDesc" class="text-muted small" style="line-height: 1.6;">-</p>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button id="modalBtnRead" class="btn btn-success fw-bold py-2">
+                                <i class="bi bi-book-half"></i> Baca Sekarang
+                            </button>
+                            <button class="btn btn-outline-secondary py-2" data-bs-dismiss="modal">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifikasi -->
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
         <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -556,22 +601,32 @@
                     }
                 }
 
+                const hasPdf = book.pdfUrl ? true : false;
+
                 const col = document.createElement('div');
                 col.className = 'col-6 col-md-4 col-lg-3';
                 col.innerHTML = `
-                    <div class="card h-100 border-0 shadow-sm task-card" onclick="openBook('${book.id}')">
-                        <div class="position-relative" style="height: 180px; background: #eee; overflow: hidden; border-radius: 10px 10px 0 0;">
+                    <div class="card h-100 border-0 shadow-sm task-card">
+                        <div class="position-relative" style="height: 180px; background: #eee; overflow: hidden; border-radius: 10px 10px 0 0;" onclick="openBook('${book.id}')">
                             ${cover ? `<img src="${cover}" alt="${title}" style="width: 100%; height: 100%; object-fit: cover;">` 
                                     : `<div class="d-flex align-items-center justify-content-center h-100 text-secondary"><i class="bi bi-book h1"></i></div>`}
                             <span class="position-absolute top-0 end-0 badge bg-primary m-2 shadow-sm" style="font-size: 10px;">${displayCategory}</span>
                         </div>
-                        <div class="card-body p-2">
-                            <h6 class="card-title small fw-bold mb-1 text-truncate" title="${title}">${title}</h6>
+                        <div class="card-body p-2 d-flex flex-column">
+                            <h6 class="card-title small fw-bold mb-1 text-truncate" title="${title}" onclick="openBook('${book.id}')">${title}</h6>
                             <div class="d-flex align-items-center mb-1">
                                 <span class="badge bg-light text-secondary border px-1" style="font-size: 9px;" title="${fullCategory}">${displayCategory}</span>
                             </div>
                             <small class="text-muted d-block mb-2 text-truncate">${author}</small>
-                            <button class="btn btn-outline-primary btn-sm w-100 py-0" style="font-size: 12px;">Lihat Detail</button>
+                            
+                            <div class="mt-auto">
+                                ${hasPdf ? `
+                                <button onclick="readBook('${book.pdfUrl}', '${title}')" class="btn btn-success btn-sm w-100 py-1 mb-1" style="font-size: 12px;">
+                                    <i class="bi bi-book-half"></i> Baca
+                                </button>
+                                ` : ''}
+                                <button onclick="openBook('${book.id}')" class="btn btn-outline-primary btn-sm w-100 py-0" style="font-size: 12px;">Lihat Detail</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -624,10 +679,53 @@
             renderCatalog(filtered);
         }
 
+        window.readBook = function(url, title) {
+            if (!url) {
+                alert("Maaf, versi digital buku ini belum tersedia.");
+                return;
+            }
+            // Open in new tab (Android will handle PDF intent or download)
+            window.open(url, '_blank');
+        }
+
         window.openBook = function(bookId) {
-            // Placeholder for book detail or reading view
-            // Can be expanded later
-            alert("Fitur detail buku akan segera hadir! ID: " + bookId);
+            const book = allBooks.find(b => b.id === bookId);
+            if (!book) return;
+
+            // Populate Modal
+            document.getElementById('modalBookTitle').innerText = book.title || book.judul || "Tanpa Judul";
+            document.getElementById('modalBookAuthor').innerText = book.author || book.penulis || "Penulis tidak diketahui";
+            
+            // Format Category
+            let cat = book.mainCategory || book.category || "Umum";
+            if(cat.includes('>')) cat = cat.split('>')[0].trim();
+            document.getElementById('modalBookCategory').innerText = cat;
+
+            document.getElementById('modalBookYear').innerText = book.year || "-";
+            document.getElementById('modalBookStock').innerText = (book.stock || 0) + " Eks";
+            document.getElementById('modalBookDesc').innerText = book.description || "Tidak ada deskripsi.";
+            
+            const cover = book.coverUrl || book.cover || null;
+            const imgEl = document.getElementById('modalBookCover');
+            if (cover) {
+                imgEl.src = cover;
+            } else {
+                imgEl.src = "https://via.placeholder.com/400x250?text=No+Cover";
+            }
+
+            // Read Button Logic
+            const btnRead = document.getElementById('modalBtnRead');
+            if (book.pdfUrl) {
+                btnRead.classList.remove('d-none');
+                btnRead.onclick = () => readBook(book.pdfUrl, book.title);
+            } else {
+                btnRead.classList.add('d-none');
+            }
+
+            // Show Modal
+            const modalElement = document.getElementById('bookDetailModal');
+            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modal.show();
         }
 
         // Call loadCatalog on startup
