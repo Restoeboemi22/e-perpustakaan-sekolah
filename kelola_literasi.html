@@ -226,7 +226,12 @@
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab" aria-controls="reports" aria-selected="false">
-                            <i class="bi bi-file-earmark-text"></i> Laporan Masuk
+                            <i class="bi bi-file-earmark-text"></i> Perlu Dinilai
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">
+                            <i class="bi bi-clock-history"></i> Riwayat
                         </button>
                     </li>
                 </ul>
@@ -309,11 +314,11 @@
                         </div>
                     </div>
 
-                    <!-- Tab Laporan Masuk -->
+                    <!-- Tab Laporan Masuk (Perlu Dinilai) -->
                     <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
                         <div class="card-custom">
                             <div class="card-header-custom">
-                                <h5 class="card-title-custom">Laporan Tugas Masuk</h5>
+                                <h5 class="card-title-custom">Daftar Perlu Dinilai</h5>
                                 <div class="d-flex gap-2 align-items-center">
                                     <select id="filterReportClass" class="form-select form-select-sm" style="width: 130px;">
                                         <option value="">Semua Kelas</option>
@@ -328,6 +333,47 @@
                                         <option value="IX-C">IX-C</option>
                                     </select>
                                     <button id="refreshReportsBtn" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-custom table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="ps-4">Nama Siswa</th>
+                                            <th>Judul Tugas</th>
+                                            <th>Tanggal Kirim</th>
+                                            <th>Lampiran/Isi</th>
+                                            <th>Status</th>
+                                            <th class="text-end pe-4">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reportList">
+                                        <tr><td colspan="6" class="text-center py-5 text-muted">Klik Refresh untuk memuat laporan...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Riwayat -->
+                    <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+                        <div class="card-custom">
+                            <div class="card-header-custom">
+                                <h5 class="card-title-custom">Riwayat Penilaian</h5>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <select id="filterHistoryClass" class="form-select form-select-sm" style="width: 130px;">
+                                        <option value="">Semua Kelas</option>
+                                        <option value="VII-A">VII-A</option>
+                                        <option value="VII-B">VII-B</option>
+                                        <option value="VII-C">VII-C</option>
+                                        <option value="VIII-A">VIII-A</option>
+                                        <option value="VIII-B">VIII-B</option>
+                                        <option value="VIII-C">VIII-C</option>
+                                        <option value="IX-A">IX-A</option>
+                                        <option value="IX-B">IX-B</option>
+                                        <option value="IX-C">IX-C</option>
+                                    </select>
+                                    <button id="refreshHistoryBtn" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
                                     <button class="btn btn-sm btn-success text-white" onclick="exportReports()">
                                         <i class="bi bi-file-earmark-excel"></i> Export Excel
                                     </button>
@@ -345,8 +391,8 @@
                                             <th class="text-end pe-4">Aksi</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="reportList">
-                                        <tr><td colspan="6" class="text-center py-5 text-muted">Klik Refresh untuk memuat laporan...</td></tr>
+                                    <tbody id="historyList">
+                                        <tr><td colspan="6" class="text-center py-5 text-muted">Klik Refresh untuk memuat riwayat...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -389,6 +435,13 @@
         reportsTab.addEventListener('shown.bs.tab', function (event) {
             loadReports();
             // Show Print Button, Hide Publish Button
+            document.getElementById('btnPublikasiTugas').classList.add('d-none');
+            document.getElementById('btnCetakLaporan').classList.remove('d-none');
+        });
+
+        const historyTab = document.getElementById('history-tab');
+        historyTab.addEventListener('shown.bs.tab', function (event) {
+            loadReports();
             document.getElementById('btnPublikasiTugas').classList.add('d-none');
             document.getElementById('btnCetakLaporan').classList.remove('d-none');
         });
@@ -511,14 +564,20 @@
         let currentReports = []; // Store for export
         let allReportsData = {}; // Store for filtering
 
-        // Event listener for filter
-        document.getElementById('filterReportClass').addEventListener('change', () => {
-            renderReports(allReportsData);
-        });
+        // Event listener for filters
+        document.getElementById('filterReportClass').addEventListener('change', () => renderReports(allReportsData));
+        document.getElementById('filterHistoryClass').addEventListener('change', () => renderReports(allReportsData));
+        
+        // Refresh Button Logic
+        document.getElementById('refreshReportsBtn').addEventListener('click', loadReports);
+        document.getElementById('refreshHistoryBtn').addEventListener('click', loadReports);
 
         async function loadReports() {
-            const tbody = document.getElementById('reportList');
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Memuat laporan...</td></tr>';
+            const reportBody = document.getElementById('reportList');
+            const historyBody = document.getElementById('historyList');
+            
+            reportBody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Memuat laporan...</td></tr>';
+            historyBody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Memuat riwayat...</td></tr>';
 
             try {
                 const response = await fetch(DATABASE_URL + LOGS_ENDPOINT);
@@ -529,35 +588,38 @@
                 renderReports(allReportsData);
             } catch (error) {
                 console.error('Error:', error);
-                tbody.innerHTML = `<tr><td colspan="6" class="text-danger text-center">Gagal memuat laporan: ${error.message}</td></tr>`;
+                const errorRow = `<tr><td colspan="6" class="text-danger text-center">Gagal memuat: ${error.message}</td></tr>`;
+                reportBody.innerHTML = errorRow;
+                historyBody.innerHTML = errorRow;
             }
         }
 
         function renderReports(data) {
-            const tbody = document.getElementById('reportList');
-            tbody.innerHTML = '';
+            const reportBody = document.getElementById('reportList');
+            const historyBody = document.getElementById('historyList');
+            
+            reportBody.innerHTML = '';
+            historyBody.innerHTML = '';
             currentReports = [];
             
-            const filterClass = document.getElementById('filterReportClass').value;
+            const filterReport = document.getElementById('filterReportClass').value;
+            const filterHistory = document.getElementById('filterHistoryClass').value;
 
             if (!data || Object.keys(data).length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Belum ada laporan masuk.</td></tr>';
+                const emptyRow = '<tr><td colspan="6" class="text-center py-5 text-muted">Belum ada data.</td></tr>';
+                reportBody.innerHTML = emptyRow;
+                historyBody.innerHTML = emptyRow;
                 return;
             }
 
-            let hasData = false;
+            let hasReportData = false;
+            let hasHistoryData = false;
 
             Object.keys(data).forEach(key => {
                 const log = data[key];
-
-                // Filter Logic
-                if (filterClass) {
-                    const studentClass = log.class || log.kelas || "";
-                    if (studentClass !== filterClass) return;
-                }
-
-                hasData = true;
                 const isCorrected = log.status === 'corrected';
+                
+                // Common Row Construction
                 const rowClass = isCorrected ? 'table-success' : 'table-warning';
                 const statusBadge = isCorrected 
                     ? '<span class="badge bg-success">Sudah Dikoreksi</span>' 
@@ -567,21 +629,9 @@
                     ? `<button onclick="toggleReportStatus('${key}', false)" class="btn btn-sm btn-secondary me-1" title="Tandai Belum"><i class="bi bi-x-circle"></i></button>`
                     : `<button onclick="toggleReportStatus('${key}', true)" class="btn btn-sm btn-success me-1" title="Tandai Sudah"><i class="bi bi-check-circle"></i></button>`;
 
-                // Flatten for export
-                currentReports.push({
-                    id: key,
-                    ...log,
-                    status: isCorrected ? 'Sudah Dikoreksi' : 'Belum Dikoreksi',
-                    dateFormatted: log.timestamp ? new Date(log.timestamp).toLocaleDateString('id-ID') : '-'
-                });
-
                 const date = log.timestamp ? new Date(log.timestamp).toLocaleString('id-ID') : '-';
-                
-                // Handle different content types (link vs text vs file if any)
-                // Fallback to 'content' if 'summary' is missing (backward compatibility)
                 let summaryDisplay = log.summary || log.content || '-';
                 let bookTitleDisplay = log.bookTitle ? `<strong>${log.bookTitle}</strong><br>` : '';
-                
                 let contentDisplay = bookTitleDisplay + summaryDisplay;
 
                 if (summaryDisplay.startsWith('http')) {
@@ -590,7 +640,7 @@
                     contentDisplay = bookTitleDisplay + summaryDisplay.substring(0, 50) + '...';
                 }
 
-                const row = `
+                const rowHtml = `
                     <tr class="${rowClass}">
                         <td class="ps-4 fw-bold">
                             ${log.studentName || 'Tanpa Nama'}
@@ -606,11 +656,34 @@
                         </td>
                     </tr>
                 `;
-                tbody.innerHTML += row;
+
+                // Add to Current Reports for Export
+                currentReports.push({
+                    id: key,
+                    ...log,
+                    status: isCorrected ? 'Sudah Dikoreksi' : 'Belum Dikoreksi',
+                    dateFormatted: log.timestamp ? new Date(log.timestamp).toLocaleDateString('id-ID') : '-'
+                });
+
+                // Logic Distribution
+                if (isCorrected) {
+                    // History Logic
+                    if (filterHistory && (log.class || log.kelas || "") !== filterHistory) return;
+                    historyBody.innerHTML += rowHtml;
+                    hasHistoryData = true;
+                } else {
+                    // Report Logic (Perlu Dinilai)
+                    if (filterReport && (log.class || log.kelas || "") !== filterReport) return;
+                    reportBody.innerHTML += rowHtml;
+                    hasReportData = true;
+                }
             });
 
-            if (!hasData) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Tidak ada laporan untuk kelas ini.</td></tr>';
+            if (!hasReportData) {
+                reportBody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Tidak ada laporan yang perlu dinilai.</td></tr>';
+            }
+            if (!hasHistoryData) {
+                historyBody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Belum ada riwayat penilaian.</td></tr>';
             }
         }
 
