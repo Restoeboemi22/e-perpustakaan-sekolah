@@ -576,12 +576,18 @@
                 });
 
                 const date = log.timestamp ? new Date(log.timestamp).toLocaleString('id-ID') : '-';
+                
                 // Handle different content types (link vs text vs file if any)
-                let contentDisplay = log.content || '-';
-                if (contentDisplay.startsWith('http')) {
-                    contentDisplay = `<a href="${contentDisplay}" target="_blank" class="text-primary text-decoration-none"><i class="bi bi-link-45deg"></i> Buka Link</a>`;
-                } else if (contentDisplay.length > 50) {
-                    contentDisplay = contentDisplay.substring(0, 50) + '...';
+                // Fallback to 'content' if 'summary' is missing (backward compatibility)
+                let summaryDisplay = log.summary || log.content || '-';
+                let bookTitleDisplay = log.bookTitle ? `<strong>${log.bookTitle}</strong><br>` : '';
+                
+                let contentDisplay = bookTitleDisplay + summaryDisplay;
+
+                if (summaryDisplay.startsWith('http')) {
+                    contentDisplay = `<a href="${summaryDisplay}" target="_blank" class="text-primary text-decoration-none"><i class="bi bi-link-45deg"></i> Buka Link</a>`;
+                } else if (summaryDisplay.length > 50) {
+                    contentDisplay = bookTitleDisplay + summaryDisplay.substring(0, 50) + '...';
                 }
 
                 const row = `
@@ -654,8 +660,10 @@
             const dataToExport = currentReports.map(item => ({
                 "Nama Siswa": item.studentName,
                 "Judul Tugas": item.taskTitle,
+                "Judul Buku": item.bookTitle || '-',
+                "Ringkasan/Isi": item.summary || item.content || '-',
                 "Tanggal Kirim": item.dateFormatted,
-                "Isi Laporan": item.content,
+                "Status": item.status,
                 "Waktu Lengkap": item.timestamp ? new Date(item.timestamp).toLocaleString('id-ID') : ''
             }));
 
