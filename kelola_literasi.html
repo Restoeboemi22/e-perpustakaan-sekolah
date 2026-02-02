@@ -25,6 +25,7 @@
             }
             #sidebar-wrapper, 
             .navbar, 
+            .top-header,
             .btn, 
             .card-header-custom div, /* Hide buttons in header */
             .nav-tabs,
@@ -175,8 +176,11 @@
                 </div>
                 <div>
                     <button class="btn btn-light d-md-none me-2" id="menu-toggle"><i class="bi bi-list"></i></button>
-                    <button class="btn btn-primary" form="addTaskForm" type="submit">
+                    <button class="btn btn-primary" id="btnPublikasiTugas" form="addTaskForm" type="submit">
                         <i class="bi bi-send"></i> Publikasi Tugas
+                    </button>
+                    <button class="btn btn-secondary d-none" id="btnCetakLaporan" onclick="printReports()">
+                        <i class="bi bi-printer"></i> Cetak Laporan
                     </button>
                 </div>
             </div>
@@ -354,6 +358,16 @@
         const reportsTab = document.getElementById('reports-tab');
         reportsTab.addEventListener('shown.bs.tab', function (event) {
             loadReports();
+            // Show Print Button, Hide Publish Button
+            document.getElementById('btnPublikasiTugas').classList.add('d-none');
+            document.getElementById('btnCetakLaporan').classList.remove('d-none');
+        });
+
+        const tasksTab = document.getElementById('tasks-tab');
+        tasksTab.addEventListener('shown.bs.tab', function (event) {
+            // Show Publish Button, Hide Print Button
+            document.getElementById('btnPublikasiTugas').classList.remove('d-none');
+            document.getElementById('btnCetakLaporan').classList.add('d-none');
         });
 
         // Expose functions to global scope
