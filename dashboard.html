@@ -35,27 +35,65 @@
         
         .main-container { padding: 0 2.5rem 2.5rem 2.5rem; }
 
-        /* Stats Cards */
-        .stat-card { background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem; transition: transform 0.2s; }
-        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: transparent; }
-        .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .stat-info h6 { margin: 0; color: #64748b; font-size: 0.875rem; font-weight: 500; }
-        .stat-info h3 { margin: 0; color: #1e293b; font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
+        /* Stats Cards - Modern Solid Colors */
+        .stat-card { 
+            border-radius: 12px; 
+            padding: 1.5rem; 
+            color: white; 
+            position: relative; 
+            overflow: hidden; 
+            height: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
         
-        .bg-blue-light { background: #eff6ff; color: #2563eb; }
-        .bg-green-light { background: #f0fdf4; color: #16a34a; }
-        .bg-orange-light { background: #fff7ed; color: #ea580c; }
-        .bg-purple-light { background: #faf5ff; color: #9333ea; }
+        .bg-blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+        .bg-green { background: linear-gradient(135deg, #16a34a, #15803d); }
+        .bg-purple { background: linear-gradient(135deg, #9333ea, #7e22ce); }
+        .bg-orange { background: linear-gradient(135deg, #ea580c, #c2410c); }
 
-        /* Recent Activity Table */
-        .card { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-bottom: 24px; overflow: hidden; }
-        .card-header-custom { padding: 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-        .card-title-custom { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0; }
+        .stat-icon { 
+            font-size: 2.5rem; 
+            opacity: 0.8; 
+            margin-bottom: 0.5rem;
+        }
+        .stat-value { font-size: 2rem; font-weight: 700; margin-bottom: 0; line-height: 1.2; }
+        .stat-label { font-size: 0.9rem; font-weight: 500; opacity: 0.9; }
         
-        .table-custom th { background-color: white; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; padding: 1rem 1.5rem; }
-        .table-custom td { padding: 1rem 1.5rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.95rem; }
+        /* Quick Actions */
+        .section-title { font-size: 1.1rem; font-weight: 600; color: #334155; margin-bottom: 1rem; margin-top: 1rem; }
         
-        .book-cover-sm { width: 32px; height: 44px; border-radius: 4px; object-fit: cover; }
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #334155;
+        }
+        .action-card:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #2563eb;
+            transform: translateY(-2px);
+        }
+        .action-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .action-text { font-weight: 600; font-size: 0.95rem; }
+
+        /* Tables & Lists */
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-bottom: 24px; overflow: hidden; }
+        .card-header-custom { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; background: white; }
+        .card-title-custom { font-size: 1rem; font-weight: 600; color: #1e293b; margin: 0; }
+        
+        .empty-state { padding: 3rem; text-align: center; color: #94a3b8; }
 
         @media (max-width: 768px) {
             #sidebar-wrapper { margin-left: -260px; }
@@ -118,14 +156,14 @@
         <div id="page-content-wrapper">
             <div class="top-header">
                 <div>
-                    <h1 class="page-title">Dashboard</h1>
-                    <p class="text-muted small mb-0">Selamat datang kembali, Admin.</p>
+                    <h1 class="page-title">Dashboard Admin</h1>
+                    <p class="text-muted small mb-0">Selamat datang kembali, Admin 👋</p>
                 </div>
-                <div>
-                    <button class="btn btn-light d-md-none me-2" id="menu-toggle"><i class="bi bi-list"></i></button>
-                    <div class="d-none d-md-block text-muted small">
-                        <i class="bi bi-calendar3 me-1"></i> <span id="currentDate"></span>
-                    </div>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-primary btn-sm d-none d-md-block shadow-sm">
+                        <i class="bi bi-bell-fill me-1"></i> 3 Notifikasi
+                    </button>
+                    <button class="btn btn-light d-md-none" id="menu-toggle"><i class="bi bi-list"></i></button>
                 </div>
             </div>
 
@@ -133,104 +171,105 @@
                 <!-- Stats Row -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-3 col-sm-6">
-                        <div class="stat-card">
-                            <div class="stat-icon bg-blue-light">
-                                <i class="bi bi-journal-bookmark-fill"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h6>Total Buku</h6>
-                                <h3 id="totalBooks">-</h3>
-                            </div>
+                        <div class="stat-card bg-blue">
+                            <i class="bi bi-phone stat-icon"></i>
+                            <h3 class="stat-value" id="totalBooks">0</h3>
+                            <div class="stat-label">Total Buku</div>
                         </div>
                     </div>
                     <div class="col-md-3 col-sm-6">
-                        <div class="stat-card">
-                            <div class="stat-icon bg-green-light">
-                                <i class="bi bi-people-fill"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h6>Total Siswa</h6>
-                                <h3 id="totalStudents">-</h3>
-                            </div>
+                        <div class="stat-card bg-green">
+                            <i class="bi bi-book stat-icon"></i>
+                            <h3 class="stat-value" id="totalBorrowed">0</h3>
+                            <div class="stat-label">Sedang Dipinjam</div>
                         </div>
                     </div>
                     <div class="col-md-3 col-sm-6">
-                        <div class="stat-card">
-                            <div class="stat-icon bg-orange-light">
-                                <i class="bi bi-journal-arrow-up"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h6>Dipinjam</h6>
-                                <h3 id="totalBorrowed">0</h3>
-                            </div>
+                        <div class="stat-card bg-purple">
+                            <i class="bi bi-people stat-icon"></i>
+                            <h3 class="stat-value" id="totalStudents">0</h3>
+                            <div class="stat-label">Siswa Aktif</div>
                         </div>
                     </div>
                     <div class="col-md-3 col-sm-6">
-                        <div class="stat-card">
-                            <div class="stat-icon bg-purple-light">
-                                <i class="bi bi-pencil-square"></i>
+                        <div class="stat-card bg-orange">
+                            <i class="bi bi-clock-history stat-icon"></i>
+                            <h3 class="stat-value" id="totalLate">0</h3>
+                            <div class="stat-label">Terlambat</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <h5 class="section-title">Quick Actions</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <a href="/kelola_buku.html" class="action-card">
+                            <div class="action-icon text-primary"><i class="bi bi-plus-lg"></i></div>
+                            <div class="action-text">Tambah Buku</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/kelola_peminjaman.html" class="action-card">
+                            <div class="action-icon text-success"><i class="bi bi-journal-arrow-up"></i></div>
+                            <div class="action-text">Kelola Peminjaman</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/kelola_siswa.html" class="action-card">
+                            <div class="action-icon text-purple" style="color: #9333ea;"><i class="bi bi-people"></i></div>
+                            <div class="action-text">Data Siswa</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/laporan.html" class="action-card">
+                            <div class="action-icon text-orange" style="color: #ea580c;"><i class="bi bi-bar-chart"></i></div>
+                            <div class="action-text">Laporan</div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Bottom Section -->
+                <div class="row g-4">
+                    <!-- Peminjaman Terbaru -->
+                    <div class="col-lg-8">
+                        <div class="card-custom h-100">
+                            <div class="card-header-custom">
+                                <h5 class="card-title-custom">Peminjaman Terbaru</h5>
                             </div>
-                            <div class="stat-info">
-                                <h6>Tugas Literasi</h6>
-                                <h3 id="totalTasks">-</h3>
+                            <div class="card-body p-0">
+                                <div id="recentLoansList" class="empty-state">
+                                    Belum ada data
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stok Menipis -->
+                    <div class="col-lg-4">
+                        <div class="card-custom h-100">
+                            <div class="card-header-custom">
+                                <h5 class="card-title-custom">Stok Menipis</h5>
+                            </div>
+                            <div class="card-body p-3">
+                                <div id="lowStockList">
+                                    <div class="d-flex align-items-center justify-content-between p-2 border-bottom">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="bg-light rounded p-2 text-danger"><i class="bi bi-exclamation-triangle"></i></div>
+                                            <div>
+                                                <div class="fw-bold small">Laskar Pelangi</div>
+                                                <div class="text-muted" style="font-size: 0.75rem;">Sisa 1</div>
+                                            </div>
+                                        </div>
+                                        <a href="/kelola_buku.html" class="btn btn-sm text-primary">Tambah</a>
+                                    </div>
+                                    <!-- More items can be added dynamically -->
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Recent Books Table -->
-                <div class="row">
-                    <div class="col-lg-8">
-                        <div class="card">
-                            <div class="card-header-custom">
-                                <h5 class="card-title-custom">Buku Terbaru</h5>
-                                <a href="/kelola_buku.html" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-custom table-hover align-middle mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th class="ps-4">Judul Buku</th>
-                                            <th>Kategori</th>
-                                            <th>Stok</th>
-                                            <th>Tanggal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="recentBooksTable">
-                                        <tr><td colspan="4" class="text-center py-4 text-muted">Memuat data...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="card h-100">
-                            <div class="card-header-custom">
-                                <h5 class="card-title-custom">Aksi Cepat</h5>
-                            </div>
-                            <div class="list-group list-group-flush">
-                                <a href="/kelola_buku.html" class="list-group-item list-group-item-action py-3">
-                                    <div class="d-flex align-items-center">
-                                        <div class="brand-icon bg-primary me-3" style="width: 36px; height: 36px; font-size: 1rem;"><i class="bi bi-plus-lg"></i></div>
-                                        <div>
-                                            <div class="fw-bold text-dark">Tambah Buku</div>
-                                            <div class="small text-muted">Input koleksi buku baru</div>
-                                        </div>
-                                    </div>
-                                </a>
-                                <a href="/kelola_literasi.html" class="list-group-item list-group-item-action py-3">
-                                    <div class="d-flex align-items-center">
-                                        <div class="brand-icon bg-success me-3" style="width: 36px; height: 36px; font-size: 1rem;"><i class="bi bi-pencil"></i></div>
-                                        <div>
-                                            <div class="fw-bold text-dark">Buat Tugas</div>
-                                            <div class="small text-muted">Publikasi tugas literasi</div>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -243,15 +282,11 @@
         toggleButton.onclick = function () {
             el.classList.toggle("toggled");
         };
-        
-        // Set Date
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', dateOptions);
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, limit, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
@@ -267,58 +302,95 @@
 
         async function loadDashboardData() {
             try {
-                // 1. Get Counts (Using snapshot size for now as simple method, or count() aggregation if supported/needed)
-                // Note: getCountFromServer is more efficient but requires newer SDK index setup sometimes. 
-                // We'll use getDocs for now since dataset is small, or just check size.
-                
-                // Books Count
+                // 1. Stats Counters
                 const booksSnapshot = await getDocs(collection(db, "books"));
                 document.getElementById('totalBooks').textContent = booksSnapshot.size;
 
-                // Students Count (assuming 'students' collection or 'users')
-                // Let's try 'students' first as per memory, fall back to 'users' if 0
-                let studentsSnapshot = await getDocs(collection(db, "students"));
-                if (studentsSnapshot.size === 0) {
-                     studentsSnapshot = await getDocs(collection(db, "users"));
-                }
-                document.getElementById('totalStudents').textContent = studentsSnapshot.size;
+                const studentsSnapshot = await getDocs(collection(db, "students"));
+                const usersSnapshot = await getDocs(collection(db, "users"));
+                document.getElementById('totalStudents').textContent = Math.max(studentsSnapshot.size, usersSnapshot.size);
 
-                // Tasks Count
-                const tasksSnapshot = await getDocs(collection(db, "literacy_tasks"));
-                document.getElementById('totalTasks').textContent = tasksSnapshot.size;
+                // Count Borrowed (Active Loans)
+                const loansRef = collection(db, "loans");
+                const activeLoansQuery = query(loansRef, where("status", "==", "Dipinjam"));
+                const activeLoansSnapshot = await getDocs(activeLoansQuery);
+                document.getElementById('totalBorrowed').textContent = activeLoansSnapshot.size;
 
-                // 2. Load Recent Books
-                const q = query(collection(db, "books"), orderBy("createdAt", "desc"), limit(5));
-                const querySnapshot = await getDocs(q);
+                // Count Late (Mock logic for now, or filter by returnDate < today)
+                // For simplicity/demo, keeping it 0 or basic check
+                let lateCount = 0;
+                const today = new Date();
+                activeLoansSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.returnDate) {
+                         const returnDate = new Date(data.returnDate); // assuming string or timestamp
+                         if (returnDate < today) lateCount++;
+                    }
+                });
+                document.getElementById('totalLate').textContent = lateCount;
+
+                // 2. Recent Loans
+                const recentLoansQuery = query(collection(db, "loans"), orderBy("loanDate", "desc"), limit(5));
+                const recentLoansSnap = await getDocs(recentLoansQuery);
                 
-                const tableBody = document.getElementById('recentBooksTable');
-                tableBody.innerHTML = '';
-                
-                if (querySnapshot.empty) {
-                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">Belum ada buku data.</td></tr>';
-                } else {
-                    querySnapshot.forEach((doc) => {
+                const recentContainer = document.getElementById('recentLoansList');
+                if (!recentLoansSnap.empty) {
+                    recentContainer.innerHTML = '';
+                    recentLoansSnap.forEach(doc => {
                         const data = doc.data();
-                        const tr = document.createElement('tr');
-                        const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString('id-ID') : '-';
+                        const date = new Date(data.loanDate).toLocaleDateString('id-ID');
                         
-                        tr.innerHTML = `
-                            <td class="ps-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="fw-medium text-dark text-truncate" style="max-width: 200px;">${data.title}</div>
+                        const item = document.createElement('div');
+                        item.className = 'd-flex align-items-center justify-content-between p-3 border-bottom';
+                        item.innerHTML = `
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-light rounded-circle p-2 text-primary" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-journal-arrow-up"></i>
                                 </div>
-                            </td>
-                            <td><span class="badge bg-light text-secondary border">${data.category ? data.category.split('>')[0].trim() : '-'}</span></td>
-                            <td>${data.stock}</td>
-                            <td class="text-muted small">${date}</td>
+                                <div>
+                                    <div class="fw-bold text-dark">${data.studentName || 'Siswa'}</div>
+                                    <div class="text-muted small">Meminjam ${data.bookTitle || 'Buku'}</div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="badge bg-soft-primary text-primary" style="background: #eff6ff;">${date}</div>
+                            </div>
                         `;
-                        tableBody.appendChild(tr);
+                        recentContainer.appendChild(item);
                     });
+                }
+
+                // 3. Low Stock Books (Simple filter on client side for demo)
+                const lowStockContainer = document.getElementById('lowStockList');
+                lowStockContainer.innerHTML = '';
+                let lowStockCount = 0;
+                
+                booksSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.stock <= 3 && lowStockCount < 5) {
+                        lowStockCount++;
+                        const div = document.createElement('div');
+                        div.className = 'd-flex align-items-center justify-content-between p-2 border-bottom';
+                        div.innerHTML = `
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-light rounded p-2 text-danger"><i class="bi bi-exclamation-triangle"></i></div>
+                                <div>
+                                    <div class="fw-bold small text-truncate" style="max-width: 150px;">${data.title}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Sisa ${data.stock}</div>
+                                </div>
+                            </div>
+                            <a href="/kelola_buku.html" class="btn btn-sm text-primary">Tambah</a>
+                        `;
+                        lowStockContainer.appendChild(div);
+                    }
+                });
+                
+                if (lowStockCount === 0) {
+                    lowStockContainer.innerHTML = '<div class="text-center text-muted py-3 small">Stok aman</div>';
                 }
 
             } catch (error) {
                 console.error("Error loading dashboard:", error);
-                document.getElementById('recentBooksTable').innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">Gagal memuat data.</td></tr>';
             }
         }
 
