@@ -287,10 +287,15 @@
                                     <textarea id="description" class="form-control" rows="3" placeholder="Sinopsis singkat..."></textarea>
                                 </div>
 
-                                <button type="submit" class="btn-save">
-                                    <span id="btnText">Simpan Buku</span>
-                                    <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"></span>
-                                </button>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn-save flex-grow-1">
+                                        <span id="btnText">Simpan Buku</span>
+                                        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"></span>
+                                    </button>
+                                    <button type="button" id="btnCancelEdit" class="btn btn-secondary d-none mt-3" style="border-radius: 8px;">
+                                        Batal
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -365,7 +370,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         const firebaseConfig = {
@@ -632,7 +637,7 @@
                     <td><span class="badge-stock">${stock}</span></td>
                     <td>${fileBadge}</td>
                     <td class="text-end pe-4">
-                        <button class="action-btn edit me-1" onclick="alert('Fitur edit akan segera hadir!')"><i class="bi bi-pencil"></i></button>
+                        <button class="action-btn edit me-1" onclick="editBook('${id}')"><i class="bi bi-pencil"></i></button>
                         <button class="action-btn delete" onclick="deleteBook('${id}', '${title.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
                     </td>
                 `;
@@ -658,7 +663,7 @@
                             <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
                                 <span class="badge bg-light text-secondary border fw-normal text-truncate" style="max-width: 100px;">${data.mainCategory || 'Umum'}</span>
                                 <div class="d-flex gap-1">
-                                    <button class="grid-action-btn" onclick="alert('Fitur edit akan segera hadir!')" title="Edit"><i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i></button>
+                                    <button class="grid-action-btn" onclick="editBook('${id}')" title="Edit"><i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i></button>
                                     <button class="grid-action-btn text-danger" onclick="deleteBook('${id}', '${title.replace(/'/g, "\\'")}')" title="Hapus"><i class="bi bi-trash-fill" style="font-size: 0.8rem;"></i></button>
                                 </div>
                             </div>
@@ -734,7 +739,72 @@
         document.getElementById('searchInput').addEventListener('input', filterBooks);
         document.getElementById('filterCategory').addEventListener('change', filterBooks);
 
-        // Add Book
+        // --- EDIT MODE LOGIC ---
+        let isEditMode = false;
+        let currentEditId = null;
+        const btnCancelEdit = document.getElementById('btnCancelEdit');
+
+        window.editBook = function(id) {
+            const book = allBooksData.find(b => b.id === id);
+            if (!book) return;
+
+            // Populate Form
+            document.getElementById('title').value = book.title || book.judul || "";
+            document.getElementById('author').value = book.author || book.penulis || "";
+            document.getElementById('year').value = book.year || "";
+            document.getElementById('stock').value = book.stock || 0;
+            document.getElementById('description').value = book.description || "";
+            document.getElementById('coverUrl').value = book.coverUrl || "";
+            document.getElementById('pdfUrl').value = book.pdfUrl || "";
+
+            // Handle Categories
+            const mainCat = book.mainCategory || (book.category ? book.category.split('>')[0].trim() : "");
+            if (mainCat && categoryData[mainCat]) {
+                document.getElementById('mainCategory').value = mainCat;
+                document.getElementById('mainCategory').dispatchEvent(new Event('change')); // Trigger sub population
+                
+                const subCat = book.subCategory || (book.category && book.category.split('>')[1] ? book.category.split('>')[1].trim() : "");
+                if (subCat) {
+                    document.getElementById('subCategory').value = subCat;
+                    document.getElementById('subCategory').dispatchEvent(new Event('change')); // Trigger detail population
+
+                    const detailCat = book.categoryDetail || (book.category && book.category.split('>')[2] ? book.category.split('>')[2].trim() : "");
+                    if (detailCat) {
+                        document.getElementById('categoryDetail').value = detailCat;
+                    }
+                }
+            }
+
+            // UI Changes
+            isEditMode = true;
+            currentEditId = id;
+            document.getElementById('btnText').textContent = 'Update Buku';
+            btnCancelEdit.classList.remove('d-none');
+            
+            // Open Collapse & Scroll
+            new bootstrap.Collapse(document.getElementById('addBookCard'), { toggle: false }).show();
+            document.getElementById('addBookForm').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        btnCancelEdit.onclick = function() {
+            resetFormState();
+        };
+
+        function resetFormState() {
+            document.getElementById('addBookForm').reset();
+            isEditMode = false;
+            currentEditId = null;
+            document.getElementById('btnText').textContent = 'Simpan Buku';
+            btnCancelEdit.classList.add('d-none');
+            
+            // Reset dropdowns
+            document.getElementById('subCategory').innerHTML = '<option value="" selected disabled>Pilih Sub Kategori</option>';
+            document.getElementById('subCategory').disabled = true;
+            document.getElementById('categoryDetail').innerHTML = '<option value="" selected disabled>Pilih Detail Kategori</option>';
+            document.getElementById('categoryDetail').disabled = true;
+        }
+
+        // Add/Update Book
         document.getElementById('addBookForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.querySelector('button[type="submit"]');
@@ -744,7 +814,7 @@
             // Disable button
             btn.disabled = true;
             spinner.classList.remove('d-none');
-            btnText.textContent = 'Menyimpan...';
+            btnText.textContent = isEditMode ? 'Mengupdate...' : 'Menyimpan...';
 
             try {
                 // Upload Files
@@ -764,7 +834,7 @@
                     pdfUrl = await uploadFile(pdfFile, 'book_pdfs', 'pdfProgress');
                 }
 
-                btnText.textContent = 'Menyimpan Data...';
+                btnText.textContent = isEditMode ? 'Mengupdate Data...' : 'Menyimpan Data...';
 
                 // Handle Category Detail
                 const mainCat = document.getElementById('mainCategory').value;
@@ -780,31 +850,40 @@
                 const bookData = {
                     title: document.getElementById('title').value,
                     author: document.getElementById('author').value,
-                    category: fullCategory, // Kompatibilitas backward
-                    mainCategory: mainCat, // Kategori dasar
-                    subCategory: subCat, // Sub kategori
-                    categoryDetail: detail, // Detail spesifik
+                    category: fullCategory,
+                    mainCategory: mainCat,
+                    subCategory: subCat,
+                    categoryDetail: detail,
                     year: parseInt(document.getElementById('year').value) || new Date().getFullYear(),
                     stock: parseInt(document.getElementById('stock').value) || 0,
                     description: document.getElementById('description').value,
                     coverUrl: coverUrl,
-                    pdfUrl: pdfUrl,
-                    createdAt: serverTimestamp()
+                    pdfUrl: pdfUrl
                 };
 
-                await addDoc(collection(db, "books"), bookData);
+                if (isEditMode && currentEditId) {
+                    // Update Mode
+                    bookData.updatedAt = serverTimestamp();
+                    await updateDoc(doc(db, "books", currentEditId), bookData);
+                    showToast("Buku berhasil diperbarui!");
+                    resetFormState();
+                } else {
+                    // Add Mode
+                    bookData.createdAt = serverTimestamp();
+                    await addDoc(collection(db, "books"), bookData);
+                    showToast("Buku berhasil ditambahkan!");
+                    resetFormState();
+                }
                 
-                showToast("Buku berhasil ditambahkan!");
-                document.getElementById('addBookForm').reset();
                 loadBooks(); // Reload list
 
             } catch (error) {
-                console.error("Error adding book:", error);
+                console.error("Error saving book:", error);
                 alert("Gagal menyimpan: " + error.message);
             } finally {
                 btn.disabled = false;
                 spinner.classList.add('d-none');
-                btnText.textContent = 'Simpan Buku';
+                btnText.textContent = isEditMode ? 'Update Buku' : 'Simpan Buku';
             }
         });
 
