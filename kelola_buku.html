@@ -95,7 +95,7 @@
                 <a href="/admin/books" class="list-group-item list-group-item-action active">
                     <i class="bi bi-journal-album"></i> Kelola Buku
                 </a>
-                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Peminjaman akan segera hadir!')">
+                <a href="/admin/loans" class="list-group-item list-group-item-action">
                     <i class="bi bi-journal-arrow-up"></i> Peminjaman
                 </a>
                 <a href="/admin/literacy" class="list-group-item list-group-item-action">
@@ -128,9 +128,6 @@
                 </div>
                 <div>
                     <button class="btn btn-light d-md-none me-2" id="menu-toggle"><i class="bi bi-list"></i></button>
-                    <button class="btn-add" type="button" data-bs-toggle="collapse" data-bs-target="#addBookCard" aria-expanded="true">
-                        <i class="bi bi-plus-lg"></i> Tambah Buku
-                    </button>
                 </div>
             </div>
 
@@ -140,7 +137,6 @@
                     <div class="card">
                         <div class="card-header-custom">
                             <h5 class="card-title-custom">Tambah Buku Baru</h5>
-                            <button type="button" class="btn-close" data-bs-toggle="collapse" data-bs-target="#addBookCard" aria-label="Close"></button>
                         </div>
                         <div class="card-body p-4">
                             <form id="addBookForm">
@@ -151,27 +147,29 @@
                                             <input type="text" id="title" class="form-control" placeholder="Masukkan judul buku" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Kategori</label>
-                                            <select id="category" class="form-select" required>
-                                                <option value="" selected disabled>Pilih Kategori Utama</option>
-                                                <option value="FIKSI & SASTRA > Novel">Fiksi & Sastra > Novel</option>
-                                                <option value="FIKSI & SASTRA > Cerpen">Fiksi & Sastra > Cerpen</option>
-                                                <option value="BUKU PELAJARAN > Matematika">Buku Pelajaran > Matematika</option>
-                                                <option value="BUKU PELAJARAN > IPA">Buku Pelajaran > IPA</option>
-                                                <option value="BUKU PELAJARAN > IPS">Buku Pelajaran > IPS</option>
-                                                <option value="BUKU PELAJARAN > Bahasa">Buku Pelajaran > Bahasa</option>
-                                                <option value="NON-FIKSI > Biografi">Non-Fiksi > Biografi</option>
-                                                <option value="NON-FIKSI > Sejarah">Non-Fiksi > Sejarah</option>
-                                                <option value="PENGEMBANGAN DIRI > Motivasi">Pengembangan Diri > Motivasi</option>
-                                                <option value="MINAT > Musik">Minat > Musik</option>
-                                                <option value="MINAT > Olahraga">Minat > Olahraga</option>
-                                                <option value="MAJALAH > Sekolah">Majalah > Sekolah</option>
-                                                <option value="LAINNYA > Umum">Lainnya > Umum</option>
+                                            <label class="form-label">Kategori Utama</label>
+                                            <select id="mainCategory" class="form-select" required>
+                                                <option value="" selected disabled>Pilih Kategori</option>
+                                                <option value="FIKSI & SASTRA">Fiksi & Sastra</option>
+                                                <option value="BUKU PELAJARAN">Buku Pelajaran</option>
+                                                <option value="NON-FIKSI">Non-Fiksi</option>
+                                                <option value="PENGEMBANGAN DIRI">Pengembangan Diri</option>
+                                                <option value="MINAT">Minat</option>
+                                                <option value="MAJALAH">Majalah</option>
+                                                <option value="LAINNYA">Lainnya</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Sub Kategori</label>
+                                            <select id="subCategory" class="form-select" disabled required>
+                                                <option value="" selected disabled>Pilih Sub Kategori</option>
                                             </select>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Detail Kategori (Opsional)</label>
-                                            <input type="text" id="categoryDetail" class="form-control" placeholder="Contoh: Novel Inspiratif">
+                                            <select id="categoryDetail" class="form-select" disabled>
+                                                <option value="" selected disabled>Pilih Detail Kategori</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -289,6 +287,109 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const storage = getStorage(app);
+
+        // Data Kategori Berjenjang
+        const categoryData = {
+            "FIKSI & SASTRA": {
+                sub: ["Novel", "Cerpen", "Puisi", "Komik/Manga", "Dongeng"],
+                detail: {
+                    "Novel": ["Inspiratif", "Misteri", "Romance", "Petualangan", "Sejarah"],
+                    "Cerpen": ["Kumpulan Cerpen", "Cerpen Anak", "Cerpen Remaja"],
+                    "Komik/Manga": ["Edukasi", "Hiburan", "Sejarah"]
+                }
+            },
+            "BUKU PELAJARAN": {
+                sub: ["Matematika", "IPA", "IPS", "Bahasa", "Agama", "PKn", "Seni Budaya", "PJOK"],
+                detail: {
+                    "Matematika": ["Kelas 7", "Kelas 8", "Kelas 9", "Olimpiade"],
+                    "IPA": ["Fisika", "Biologi", "Kimia", "Terpadu"],
+                    "IPS": ["Sejarah", "Geografi", "Ekonomi", "Sosiologi"],
+                    "Bahasa": ["Bahasa Indonesia", "Bahasa Inggris", "Bahasa Daerah", "Bahasa Arab"]
+                }
+            },
+            "NON-FIKSI": {
+                sub: ["Biografi", "Sejarah", "Ensiklopedia", "Karya Ilmiah", "Jurnalistik"],
+                detail: {
+                    "Biografi": ["Tokoh Nasional", "Tokoh Dunia", "Pahlawan"],
+                    "Sejarah": ["Sejarah Indonesia", "Sejarah Dunia"]
+                }
+            },
+            "PENGEMBANGAN DIRI": {
+                sub: ["Motivasi", "Kepemimpinan", "Psikologi", "Karir", "Spiritual"],
+                detail: {
+                    "Motivasi": ["Pelajar", "Umum"],
+                    "Psikologi": ["Remaja", "Pendidikan"]
+                }
+            },
+            "MINAT": {
+                sub: ["Musik", "Olahraga", "Memasak", "Teknologi", "Seni Rupa"],
+                detail: {
+                    "Teknologi": ["Komputer", "Internet", "Coding", "Desain Grafis"],
+                    "Olahraga": ["Sepak Bola", "Basket", "Bulu Tangkis"]
+                }
+            },
+            "MAJALAH": {
+                sub: ["Sekolah", "Pendidikan", "Anak", "Umum"],
+                detail: {}
+            },
+            "LAINNYA": {
+                sub: ["Umum", "Kamus", "Atlas"],
+                detail: {
+                    "Kamus": ["Inggris-Indonesia", "Indonesia-Inggris", "KBBI"],
+                    "Atlas": ["Dunia", "Indonesia"]
+                }
+            }
+        };
+
+        // Logic Dropdown Berjenjang
+        const mainCatSelect = document.getElementById('mainCategory');
+        const subCatSelect = document.getElementById('subCategory');
+        const detailCatSelect = document.getElementById('categoryDetail');
+
+        mainCatSelect.addEventListener('change', function() {
+            const selectedMain = this.value;
+            subCatSelect.innerHTML = '<option value="" selected disabled>Pilih Sub Kategori</option>';
+            detailCatSelect.innerHTML = '<option value="" selected disabled>Pilih Detail Kategori</option>';
+            detailCatSelect.disabled = true;
+
+            if (selectedMain && categoryData[selectedMain]) {
+                const subs = categoryData[selectedMain].sub;
+                subs.forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub;
+                    option.textContent = sub;
+                    subCatSelect.appendChild(option);
+                });
+                subCatSelect.disabled = false;
+            } else {
+                subCatSelect.disabled = true;
+            }
+        });
+
+        subCatSelect.addEventListener('change', function() {
+            const selectedMain = mainCatSelect.value;
+            const selectedSub = this.value;
+            detailCatSelect.innerHTML = '<option value="" selected disabled>Pilih Detail Kategori</option>';
+
+            if (selectedMain && selectedSub && categoryData[selectedMain].detail && categoryData[selectedMain].detail[selectedSub]) {
+                const details = categoryData[selectedMain].detail[selectedSub];
+                if (details.length > 0) {
+                    details.forEach(det => {
+                        const option = document.createElement('option');
+                        option.value = det;
+                        option.textContent = det;
+                        detailCatSelect.appendChild(option);
+                    });
+                    detailCatSelect.disabled = false;
+                    return;
+                }
+            }
+            
+            // Jika tidak ada detail, biarkan disabled atau tambahkan opsi manual jika perlu
+            // Di sini kita disable saja jika tidak ada data detail spesifik
+            detailCatSelect.disabled = true; 
+            // Opsional: Bisa diubah jadi input text jika ingin custom detail, tapi user minta dropdown.
+        });
 
         // Upload Helper with Progress
         async function uploadFile(file, folder, progressId) {
@@ -442,11 +543,12 @@
                 btnText.textContent = 'Menyimpan Data...';
 
                 // Handle Category Detail
-                let categoryInput = document.getElementById('category').value;
+                const mainCat = document.getElementById('mainCategory').value;
+                const subCat = document.getElementById('subCategory').value.trim();
                 const detail = document.getElementById('categoryDetail').value.trim();
                 
                 // Simpan kategori lengkap untuk display string
-                let fullCategory = categoryInput;
+                let fullCategory = `${mainCat} > ${subCat}`;
                 if (detail) {
                     fullCategory += ` > ${detail}`;
                 }
@@ -455,7 +557,8 @@
                     title: document.getElementById('title').value,
                     author: document.getElementById('author').value,
                     category: fullCategory, // Kompatibilitas backward
-                    mainCategory: categoryInput, // Kategori dasar
+                    mainCategory: mainCat, // Kategori dasar
+                    subCategory: subCat, // Sub kategori
                     categoryDetail: detail, // Detail spesifik
                     year: parseInt(document.getElementById('year').value) || new Date().getFullYear(),
                     stock: parseInt(document.getElementById('stock').value) || 0,

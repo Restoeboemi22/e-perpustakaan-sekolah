@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Peminjaman - Admin Perpustakaan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; overflow-x: hidden; color: #333; }
+        
+        /* Sidebar Styling */
+        #wrapper { display: flex; width: 100%; min-height: 100vh; }
+        #sidebar-wrapper { width: 260px; background: white; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: all 0.3s; }
+        
+        .sidebar-brand { padding: 1.5rem; display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+        .brand-icon { width: 40px; height: 40px; background: #2563eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; }
+        .brand-text { font-weight: 700; font-size: 1.25rem; color: #1e293b; line-height: 1.2; }
+        .brand-sub { font-size: 0.75rem; color: #64748b; font-weight: 400; }
+
+        .menu-label { padding: 0 1.5rem; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1rem; }
+        
+        .list-group-item { border: none; padding: 10px 24px; color: #64748b; font-weight: 500; transition: all 0.2s; margin-bottom: 2px; background: transparent; display: flex; align-items: center; gap: 12px; }
+        .list-group-item:hover { background-color: #f1f5f9; color: #2563eb; }
+        .list-group-item.active { background-color: #eff6ff; color: #2563eb; font-weight: 600; border-right: 3px solid #2563eb; border-radius: 0 4px 4px 0; }
+        .list-group-item i { font-size: 1.1em; }
+
+        /* Main Content Styling */
+        #page-content-wrapper { width: 100%; margin-left: 260px; display: flex; flex-direction: column; background: #f8f9fa; }
+        
+        .top-header { padding: 2rem 2.5rem 1rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0; }
+        
+        .main-container { padding: 0 2.5rem 2.5rem 2.5rem; }
+
+        .card { border: none; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; margin-bottom: 24px; overflow: hidden; }
+        .card-header-custom { padding: 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .card-title-custom { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin: 0; }
+        
+        .form-label { font-size: 0.875rem; font-weight: 500; color: #64748b; margin-bottom: 0.5rem; }
+        .form-control, .form-select { border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.75rem 1rem; font-size: 0.95rem; color: #334155; }
+        .form-control::placeholder { color: #94a3b8; }
+        .form-control:focus, .form-select:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        .btn-save { background-color: #2563eb; color: white; border: none; border-radius: 8px; padding: 12px; font-weight: 600; width: 100%; margin-top: 1rem; transition: all 0.2s; }
+        .btn-save:hover { background-color: #1d4ed8; }
+
+        /* Table Styling */
+        .table-custom th { background-color: white; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; padding: 1rem 1.5rem; }
+        .table-custom td { padding: 1rem 1.5rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.95rem; }
+        
+        .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-borrowed { background: #eff6ff; color: #2563eb; }
+        .badge-returned { background: #f0fdf4; color: #16a34a; }
+        .badge-overdue { background: #fef2f2; color: #ef4444; }
+        
+        .action-btn { width: 32px; height: 32px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; border: none; background: transparent; transition: all 0.2s; }
+        .action-btn.edit { color: #2563eb; background: #eff6ff; }
+        .action-btn.delete { color: #ef4444; background: #fef2f2; }
+        .action-btn.check { color: #16a34a; background: #f0fdf4; }
+        .action-btn:hover { transform: translateY(-1px); }
+
+        @media (max-width: 768px) {
+            #sidebar-wrapper { margin-left: -260px; }
+            #page-content-wrapper { margin-left: 0; }
+            #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
+            .top-header { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.5rem; }
+            .main-container { padding: 0 1.5rem 1.5rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <div class="sidebar-brand">
+                <div class="brand-icon"><i class="bi bi-book"></i></div>
+                <div>
+                    <div class="brand-text">Lentera</div>
+                    <div class="brand-sub">Admin Panel</div>
+                </div>
+            </div>
+            
+            <div class="menu-label">Menu Utama</div>
+            <div class="list-group list-group-flush">
+                <a href="/admin" class="list-group-item list-group-item-action">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+                <a href="/admin/books" class="list-group-item list-group-item-action">
+                    <i class="bi bi-journal-album"></i> Kelola Buku
+                </a>
+                <a href="/admin/loans" class="list-group-item list-group-item-action active">
+                    <i class="bi bi-journal-arrow-up"></i> Peminjaman
+                </a>
+                <a href="/admin/literacy" class="list-group-item list-group-item-action">
+                    <i class="bi bi-pencil-square"></i> Kelola Literasi
+                </a>
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Data Siswa akan segera hadir!')">
+                    <i class="bi bi-people"></i> Data Siswa
+                </a>
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Statistik akan segera hadir!')">
+                    <i class="bi bi-bar-chart"></i> Statistik Siswa
+                </a>
+                <a href="#" class="list-group-item list-group-item-action" onclick="alert('Fitur Laporan akan segera hadir!')">
+                    <i class="bi bi-file-earmark-text"></i> Laporan
+                </a>
+            </div>
+
+            <div class="menu-label">Lainnya</div>
+            <div class="list-group list-group-flush">
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="bi bi-gear"></i> Pengaturan
+                </a>
+                <a href="/index.html" class="list-group-item list-group-item-action text-danger mt-4">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="top-header">
+                <div>
+                    <h1 class="page-title">Kelola Peminjaman</h1>
+                </div>
+                <div>
+                    <button class="btn btn-light d-md-none me-2" id="menu-toggle"><i class="bi bi-list"></i></button>
+                </div>
+            </div>
+
+            <div class="main-container">
+                <!-- Form Peminjaman (Collapsible) -->
+                <div class="collapse show" id="loanFormCard">
+                    <div class="card">
+                        <div class="card-header-custom">
+                            <h5 class="card-title-custom">Catat Peminjaman Baru</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <form id="loanForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nama Siswa</label>
+                                            <input type="text" id="studentName" class="form-control" placeholder="Nama Lengkap Siswa" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Kelas</label>
+                                            <select id="studentClass" class="form-select" required>
+                                                <option value="" selected disabled>Pilih Kelas</option>
+                                                <option value="X">Kelas X</option>
+                                                <option value="XI">Kelas XI</option>
+                                                <option value="XII">Kelas XII</option>
+                                                <option value="GURU">Guru / Staff</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Judul Buku</label>
+                                            <select id="bookSelect" class="form-select" required>
+                                                <option value="" selected disabled>Pilih Buku...</option>
+                                                <!-- Populated via JS -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tanggal Pinjam</label>
+                                            <input type="date" id="loanDate" class="form-control" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Tanggal Kembali (Rencana)</label>
+                                            <input type="date" id="returnDate" class="form-control" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Status</label>
+                                            <select id="status" class="form-select" disabled>
+                                                <option value="Dipinjam" selected>Sedang Dipinjam</option>
+                                                <option value="Dikembalikan">Sudah Dikembalikan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-save">
+                                    <span id="btnText">Simpan Peminjaman</span>
+                                    <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"></span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabel Riwayat -->
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4" style="width: 25%;">Peminjam</th>
+                                    <th style="width: 30%;">Buku</th>
+                                    <th style="width: 20%;">Tanggal</th>
+                                    <th style="width: 15%;">Status</th>
+                                    <th class="text-end pe-4" style="width: 10%;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="loanTableBody">
+                                <tr><td colspan="5" class="text-center py-5 text-muted">Memuat data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="toast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Berhasil menyimpan data!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        var el = document.getElementById("wrapper");
+        var toggleButton = document.getElementById("menu-toggle");
+
+        toggleButton.onclick = function () {
+            el.classList.toggle("toggled");
+        };
+
+        // Set default dates
+        const today = new Date();
+        const nextWeek = new Date(today);
+        nextWeek.setDate(today.getDate() + 7);
+        
+        document.getElementById('loanDate').valueAsDate = today;
+        document.getElementById('returnDate').valueAsDate = nextWeek;
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
+            authDomain: "eperpus-sekolah.firebaseapp.com",
+            projectId: "eperpus-sekolah",
+            storageBucket: "eperpus-sekolah.firebasestorage.app",
+            messagingSenderId: "303647816343",
+            appId: "1:303647816343:web:78ad36d2d1be25930547d2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Load Books for Dropdown
+        async function loadBooks() {
+            const bookSelect = document.getElementById('bookSelect');
+            try {
+                const q = query(collection(db, "books"), orderBy("title", "asc"));
+                const querySnapshot = await getDocs(q);
+                
+                querySnapshot.forEach((doc) => {
+                    const book = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id; // Use Doc ID as value
+                    option.textContent = book.title;
+                    option.dataset.title = book.title; // Store title for easier access
+                    bookSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error loading books: ", error);
+            }
+        }
+
+        // Load Loans Table
+        async function loadLoans() {
+            const tableBody = document.getElementById('loanTableBody');
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Memuat data...</td></tr>';
+            
+            try {
+                const q = query(collection(db, "loans"), orderBy("loanDate", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                tableBody.innerHTML = '';
+                
+                if(querySnapshot.empty) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Belum ada data peminjaman</td></tr>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const loan = doc.data();
+                    const row = document.createElement('tr');
+                    
+                    // Format Dates
+                    const loanDate = new Date(loan.loanDate).toLocaleDateString('id-ID');
+                    const returnDate = new Date(loan.returnDate).toLocaleDateString('id-ID');
+                    
+                    // Status Badge
+                    let statusBadge = '';
+                    if (loan.status === 'Dipinjam') {
+                        statusBadge = '<span class="badge-status badge-borrowed">Dipinjam</span>';
+                    } else if (loan.status === 'Dikembalikan') {
+                        statusBadge = '<span class="badge-status badge-returned">Dikembalikan</span>';
+                    } else {
+                        statusBadge = '<span class="badge-status badge-overdue">Terlambat</span>';
+                    }
+
+                    // Action Buttons (Only show 'Return' if status is Dipinjam)
+                    let actionButtons = `
+                        <button class="action-btn delete" onclick="deleteLoan('${doc.id}')" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    `;
+                    
+                    if (loan.status === 'Dipinjam') {
+                        actionButtons = `
+                            <button class="action-btn check me-1" onclick="returnBook('${doc.id}')" title="Tandai Kembali">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            ${actionButtons}
+                        `;
+                    }
+
+                    row.innerHTML = `
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">${loan.studentName}</div>
+                            <div class="small text-muted">${loan.studentClass}</div>
+                        </td>
+                        <td>${loan.bookTitle}</td>
+                        <td>
+                            <div class="small text-muted">Pinjam: ${loanDate}</div>
+                            <div class="small text-muted">Kembali: ${returnDate}</div>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td class="text-end pe-4">
+                            ${actionButtons}
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error loading loans: ", error);
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-danger">Gagal memuat data</td></tr>';
+            }
+        }
+
+        // Save Loan
+        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSpinner = document.getElementById('btnSpinner');
+            const btnText = document.getElementById('btnText');
+            
+            btnSpinner.classList.remove('d-none');
+            btnText.textContent = 'Menyimpan...';
+            
+            try {
+                const bookSelect = document.getElementById('bookSelect');
+                const selectedOption = bookSelect.options[bookSelect.selectedIndex];
+                
+                const loanData = {
+                    studentName: document.getElementById('studentName').value,
+                    studentClass: document.getElementById('studentClass').value,
+                    bookId: bookSelect.value,
+                    bookTitle: selectedOption.dataset.title, // Save title to avoid extra reads
+                    loanDate: document.getElementById('loanDate').value,
+                    returnDate: document.getElementById('returnDate').value,
+                    status: 'Dipinjam',
+                    createdAt: serverTimestamp()
+                };
+
+                await addDoc(collection(db, "loans"), loanData);
+                
+                // Show Success Toast
+                const toast = new bootstrap.Toast(document.getElementById('toast'));
+                document.getElementById('toastMessage').textContent = 'Peminjaman berhasil dicatat!';
+                toast.show();
+                
+                // Reset Form & Reload Table
+                document.getElementById('loanForm').reset();
+                document.getElementById('loanDate').valueAsDate = new Date(); // Reset date
+                loadLoans();
+
+            } catch (error) {
+                console.error("Error adding loan: ", error);
+                alert("Gagal menyimpan data: " + error.message);
+            } finally {
+                btnSpinner.classList.add('d-none');
+                btnText.textContent = 'Simpan Peminjaman';
+            }
+        });
+
+        // Expose functions to global scope for HTML onclick attributes
+        window.deleteLoan = async (id) => {
+            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                try {
+                    await deleteDoc(doc(db, "loans", id));
+                    loadLoans();
+                } catch (error) {
+                    console.error("Error deleting loan: ", error);
+                    alert("Gagal menghapus data");
+                }
+            }
+        };
+
+        window.returnBook = async (id) => {
+            if (confirm('Tandai buku ini sudah dikembalikan?')) {
+                try {
+                    await updateDoc(doc(db, "loans", id), {
+                        status: 'Dikembalikan',
+                        actualReturnDate: new Date().toISOString().split('T')[0]
+                    });
+                    loadLoans();
+                } catch (error) {
+                    console.error("Error updating loan: ", error);
+                    alert("Gagal mengupdate status");
+                }
+            }
+        };
+
+        // Initial Load
+        loadBooks();
+        loadLoans();
+    </script>
+</body>
+</html>

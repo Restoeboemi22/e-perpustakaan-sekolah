@@ -13,6 +13,10 @@
       "destination": "/kelola_literasi.html"
     },
     {
+      "source": "/admin/loans",
+      "destination": "/kelola_peminjaman.html"
+    },
+    {
       "source": "/login",
       "destination": "/literacy_siswa.html"
     },
