@@ -641,7 +641,7 @@
                                     password: row["Password"] || "123456",
                                     nisn: row["NIS/NIP"] ? String(row["NIS/NIP"]) : "",
                                     role: userRole.toUpperCase(), // STUDENT or TEACHER
-                                    classId: row["Kelas"] || null, // Store string class for now
+                                    class: row["Kelas"] || null, // Field matches 'students' collection schema
                                     email: row["Email"] || "",
                                     gender: (row["Jenis Kelamin (L/P)"] || "L") === "P" ? "FEMALE" : "MALE",
                                     deviceId: null, // Reset device binding on new import
