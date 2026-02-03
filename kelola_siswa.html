@@ -223,6 +223,9 @@
                             <button class="btn btn-sm btn-success text-white" onclick="document.getElementById('excelInput').click()">
                                 <i class="bi bi-file-earmark-excel"></i> Import Excel
                             </button>
+                            <button class="btn btn-sm btn-primary" onclick="exportData()">
+                                <i class="bi bi-cloud-download"></i> Download Data
+                            </button>
                             <select id="filterClass" class="form-select form-select-sm" style="width: 150px;">
                                 <option value="">Semua Kelas</option>
                                 <option value="VII-A">Kelas VII-A</option>
@@ -507,6 +510,65 @@
 
             reader.readAsArrayBuffer(file);
         });
+
+        // Export Data Function
+        window.exportData = async () => {
+            // Show simple toast or alert since we don't have SweetAlert2 loading in this file style
+            showToast('Sedang memproses download data...');
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, "students"));
+                const exportData = [];
+                
+                // Headers matching Pengaturan > Integrasi Data Master (Standard Format)
+                exportData.push([
+                    "Nama Lengkap", 
+                    "Role (Siswa/Guru)", 
+                    "NIS/NIP", 
+                    "Kelas", 
+                    "Username", 
+                    "Password", 
+                    "Email", 
+                    "Jenis Kelamin (L/P)"
+                ]);
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    exportData.push([
+                        data.name || "",
+                        (data.role || "STUDENT") === "STUDENT" ? "Siswa" : "Guru",
+                        data.nisn || "",
+                        data.class || "",
+                        data.username || "",
+                        data.password || "", // Exporting password for round-trip capability
+                        data.email || "",
+                        (data.gender === "FEMALE") ? "P" : "L"
+                    ]);
+                });
+
+                // Create workbook and worksheet
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(exportData);
+
+                // Auto-width columns
+                const colWidths = exportData[0].map((_, i) => ({
+                    wch: Math.max(...exportData.map(row => String(row[i] || "").length)) + 2
+                }));
+                ws['!cols'] = colWidths;
+
+                XLSX.utils.book_append_sheet(wb, ws, "Data Siswa");
+                
+                // Generate filename with timestamp
+                const date = new Date().toISOString().split('T')[0];
+                XLSX.writeFile(wb, `Data_Siswa_Perpustakaan_${date}.xlsx`);
+                
+                showToast('Download selesai! Cek folder download anda.');
+
+            } catch (error) {
+                console.error("Error exporting data: ", error);
+                alert('Gagal mendownload data: ' + error.message);
+            }
+        };
 
         // Expose functions globally
         window.deleteStudent = async (id, name) => {
