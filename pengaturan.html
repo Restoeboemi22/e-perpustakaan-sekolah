@@ -644,7 +644,7 @@
                                     class: row["Kelas"] || null, // Field matches 'students' collection schema
                                     email: row["Email"] || "",
                                     gender: (row["Jenis Kelamin (L/P)"] || "L") === "P" ? "FEMALE" : "MALE",
-                                    deviceId: null, // Reset device binding on new import
+                                    // deviceId removed to prevent logout on re-import
                                     updatedAt: new Date().toISOString()
                                 }, { merge: true });
                                 
