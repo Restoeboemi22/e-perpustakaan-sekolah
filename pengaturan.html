@@ -393,7 +393,7 @@
         // Toggle Edit Mode
         window.toggleEdit = function(formId, btn) {
             const form = document.getElementById(formId);
-            const inputs = form.querySelectorAll('input:not([readonly]), textarea, button.btn-success');
+            const inputs = form.querySelectorAll('input:not([readonly]), textarea, button.btn-success, button.btn-outline-success');
             const saveBtn = form.querySelector('button.btn-primary');
             
             // Toggle Save Button visibility
