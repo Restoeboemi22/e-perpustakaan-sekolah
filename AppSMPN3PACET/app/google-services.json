@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "303647816343",
+    "firebase_url": "https://eperpus-sekolah-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "eperpus-sekolah",
+    "storage_bucket": "eperpus-sekolah.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:303647816343:android:44525cfd8da781280547d2",
+        "android_client_info": {
+          "package_name": "com.sekolah.aplikasismpn3pacet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkc0lvDFgt6Z9KmEZUzb15rg9guEiBQuY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

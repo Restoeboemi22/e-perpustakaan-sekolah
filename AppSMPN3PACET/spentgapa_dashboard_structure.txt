@@ -1,0 +1,338 @@
+spentgapa-dashboard/
+│
+├── public/
+│   ├── favicon.ico
+│   ├── logo-spentgapa.svg
+│   ├── logo-sekolah.png
+│   └── assets/
+│       ├── images/
+│       └── icons/
+│
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx                      # Root layout
+│   │   ├── page.tsx                        # Landing/Login page
+│   │   ├── globals.css                     # Global styles
+│   │   │
+│   │   ├── (auth)/                         # Auth routes group
+│   │   │   ├── login/
+│   │   │   │   └── page.tsx                # Login page
+│   │   │   ├── register/
+│   │   │   │   └── page.tsx                # Register admin
+│   │   │   └── forgot-password/
+│   │   │       └── page.tsx
+│   │   │
+│   │   └── (dashboard)/                    # Protected dashboard routes
+│   │       ├── layout.tsx                  # Dashboard layout (sidebar, header)
+│   │       ├── page.tsx                    # Dashboard home/overview
+│   │       │
+│   │       ├── students/                   # 📊 MANAJEMEN SISWA
+│   │       │   ├── page.tsx                # List siswa
+│   │       │   ├── add/
+│   │       │   │   └── page.tsx            # Tambah siswa
+│   │       │   ├── [id]/
+│   │       │   │   ├── page.tsx            # Detail siswa
+│   │       │   │   └── edit/
+│   │       │   │       └── page.tsx        # Edit siswa
+│   │       │   └── import/
+│   │       │       └── page.tsx            # Import bulk (Excel/CSV)
+│   │       │
+│   │       ├── teachers/                   # 👨‍🏫 MANAJEMEN GURU
+│   │       │   ├── page.tsx                # List guru
+│   │       │   ├── add/
+│   │       │   │   └── page.tsx
+│   │       │   └── [id]/
+│   │       │       ├── page.tsx
+│   │       │       └── edit/
+│   │       │           └── page.tsx
+│   │       │
+│   │       ├── classes/                    # 🏫 MANAJEMEN KELAS
+│   │       │   ├── page.tsx                # List kelas
+│   │       │   ├── add/
+│   │       │   │   └── page.tsx
+│   │       │   └── [id]/
+│   │       │       ├── page.tsx            # Detail kelas + siswa
+│   │       │       └── edit/
+│   │       │           └── page.tsx
+│   │       │
+│   │       ├── library/                    # 📚 E-LIBRARY MANAGEMENT
+│   │       │   ├── page.tsx                # Dashboard library
+│   │       │   ├── books/
+│   │       │   │   ├── page.tsx            # List buku
+│   │       │   │   ├── add/
+│   │       │   │   │   └── page.tsx        # Tambah buku
+│   │       │   │   ├── [id]/
+│   │       │   │   │   ├── page.tsx        # Detail buku
+│   │       │   │   │   └── edit/
+│   │       │   │   │       └── page.tsx
+│   │       │   │   ├── import/
+│   │       │   │   │   └── page.tsx        # Import buku bulk
+│   │       │   │   └── categories/
+│   │       │   │       └── page.tsx        # Manage kategori
+│   │       │   ├── loans/
+│   │       │   │   ├── page.tsx            # List peminjaman
+│   │       │   │   ├── active/
+│   │       │   │   │   └── page.tsx        # Peminjaman aktif
+│   │       │   │   ├── overdue/
+│   │       │   │   │   └── page.tsx        # Terlambat
+│   │       │   │   └── history/
+│   │       │   │       └── page.tsx        # History peminjaman
+│   │       │   └── statistics/
+│   │       │       └── page.tsx            # Statistik perpustakaan
+│   │       │
+│   │       ├── attendance/                 # ✅ ATTENDANCE MANAGEMENT
+│   │       │   ├── page.tsx                # Dashboard absensi
+│   │       │   ├── daily/
+│   │       │   │   └── page.tsx            # Absensi harian
+│   │       │   ├── input/
+│   │       │   │   └── page.tsx            # Input manual absensi
+│   │       │   ├── reports/
+│   │       │   │   ├── page.tsx            # Laporan absensi
+│   │       │   │   ├── monthly/
+│   │       │   │   │   └── page.tsx        # Laporan bulanan
+│   │       │   │   └── student/
+│   │       │   │       └── page.tsx        # Per siswa
+│   │       │   └── statistics/
+│   │       │       └── page.tsx            # Statistik kehadiran
+│   │       │
+│   │       ├── discipline/                 # ⭐ DISCIPLINE SYSTEM
+│   │       │   ├── page.tsx                # Dashboard kedisiplinan
+│   │       │   ├── rules/
+│   │       │   │   ├── page.tsx            # Manage aturan
+│   │       │   │   ├── add/
+│   │       │   │   │   └── page.tsx
+│   │       │   │   └── [id]/
+│   │       │   │       └── edit/
+│   │       │   │           └── page.tsx
+│   │       │   ├── records/
+│   │       │   │   ├── page.tsx            # List catatan
+│   │       │   │   ├── add/
+│   │       │   │   │   └── page.tsx        # Input pelanggaran/prestasi
+│   │       │   │   ├── pending/
+│   │       │   │   │   └── page.tsx        # Yang perlu approval
+│   │       │   │   └── [id]/
+│   │       │   │       └── page.tsx        # Detail record
+│   │       │   ├── leaderboard/
+│   │       │   │   └── page.tsx            # Leaderboard siswa teladan
+│   │       │   └── reports/
+│   │       │       ├── page.tsx
+│   │       │       ├── by-class/
+│   │       │       │   └── page.tsx
+│   │       │       └── by-student/
+│   │       │           └── page.tsx
+│   │       │
+│   │       ├── virtual-pet/                # 🐾 VIRTUAL PET MANAGEMENT
+│   │       │   ├── page.tsx                # Dashboard pet
+│   │       │   ├── overview/
+│   │       │   │   └── page.tsx            # Overview semua pet
+│   │       │   ├── leaderboard/
+│   │       │   │   └── page.tsx            # Top pet (level tertinggi)
+│   │       │   ├── settings/
+│   │       │   │   └── page.tsx            # Setting XP rules, pet types
+│   │       │   ├── activities/
+│   │       │   │   └── page.tsx            # Log aktivitas pet
+│   │       │   └── statistics/
+│   │       │       └── page.tsx            # Stats engagement siswa
+│   │       │
+│   │       ├── anti-bullying/              # 🛡️ ANTI-BULLYING SYSTEM
+│   │       │   ├── page.tsx                # Dashboard bullying
+│   │       │   ├── reports/
+│   │       │   │   ├── page.tsx            # Semua laporan
+│   │       │   │   ├── pending/
+│   │       │   │   │   └── page.tsx        # Pending investigation
+│   │       │   │   ├── investigating/
+│   │       │   │   │   └── page.tsx        # Sedang ditangani
+│   │       │   │   ├── resolved/
+│   │       │   │   │   └── page.tsx        # Selesai
+│   │       │   │   └── [id]/
+│   │       │   │       ├── page.tsx        # Detail laporan
+│   │       │   │       └── handle/
+│   │       │   │           └── page.tsx    # Form penanganan
+│   │       │   ├── statistics/
+│   │       │   │   └── page.tsx            # Stats kasus bullying
+│   │       │   └── counselors/
+│   │       │       └── page.tsx            # Assign guru BK
+│   │       │
+│   │       ├── notifications/              # 🔔 NOTIFICATION CENTER
+│   │       │   ├── page.tsx                # Notification dashboard
+│   │       │   ├── send/
+│   │       │   │   ├── page.tsx            # Kirim notifikasi
+│   │       │   │   ├── individual/
+│   │       │   │   │   └── page.tsx        # Ke siswa tertentu
+│   │       │   │   ├── class/
+│   │       │   │   │   └── page.tsx        # Ke kelas
+│   │       │   │   └── broadcast/
+│   │       │   │       └── page.tsx        # Broadcast semua
+│   │       │   ├── templates/
+│   │       │   │   └── page.tsx            # Template notifikasi
+│   │       │   ├── scheduled/
+│   │       │   │   └── page.tsx            # Notif terjadwal
+│   │       │   └── history/
+│   │       │       └── page.tsx            # History terkirim
+│   │       │
+│   │       ├── reports/                    # 📊 REPORTS & ANALYTICS
+│   │       │   ├── page.tsx                # Report dashboard
+│   │       │   ├── academic/
+│   │       │   │   └── page.tsx            # Laporan akademik
+│   │       │   ├── attendance/
+│   │       │   │   └── page.tsx            # Laporan kehadiran
+│   │       │   ├── discipline/
+│   │       │   │   └── page.tsx            # Laporan kedisiplinan
+│   │       │   ├── library/
+│   │       │   │   └── page.tsx            # Laporan perpustakaan
+│   │       │   └── custom/
+│   │       │       └── page.tsx            # Custom report builder
+│   │       │
+│   │       ├── settings/                   # ⚙️ SETTINGS
+│   │       │   ├── page.tsx                # Settings overview
+│   │       │   ├── school/
+│   │       │   │   └── page.tsx            # Info sekolah
+│   │       │   ├── academic-year/
+│   │       │   │   └── page.tsx            # Tahun ajaran
+│   │       │   ├── users/
+│   │       │   │   └── page.tsx            # User management (admin)
+│   │       │   ├── roles/
+│   │       │   │   └── page.tsx            # Role & permissions
+│   │       │   └── system/
+│   │       │       └── page.tsx            # System settings
+│   │       │
+│   │       └── profile/                    # 👤 USER PROFILE
+│   │           ├── page.tsx                # View profile
+│   │           └── edit/
+│   │               └── page.tsx            # Edit profile
+│   │
+│   ├── components/                         # Reusable components
+│   │   ├── ui/                             # shadcn/ui components
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── table.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── dropdown-menu.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── alert.tsx
+│   │   │   └── ...
+│   │   │
+│   │   ├── layout/                         # Layout components
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   └── Breadcrumb.tsx
+│   │   │
+│   │   ├── common/                         # Common components
+│   │   │   ├── DataTable.tsx               # Reusable table
+│   │   │   ├── SearchBar.tsx
+│   │   │   ├── FilterPanel.tsx
+│   │   │   ├── Pagination.tsx
+│   │   │   ├── DatePicker.tsx
+│   │   │   ├── FileUpload.tsx
+│   │   │   ├── ImageUpload.tsx
+│   │   │   ├── LoadingSpinner.tsx
+│   │   │   ├── EmptyState.tsx
+│   │   │   └── ConfirmDialog.tsx
+│   │   │
+│   │   ├── dashboard/                      # Dashboard specific
+│   │   │   ├── StatsCard.tsx
+│   │   │   ├── ChartCard.tsx
+│   │   │   ├── RecentActivities.tsx
+│   │   │   └── QuickActions.tsx
+│   │   │
+│   │   ├── students/                       # Student components
+│   │   │   ├── StudentCard.tsx
+│   │   │   ├── StudentForm.tsx
+│   │   │   └── StudentTable.tsx
+│   │   │
+│   │   ├── library/                        # Library components
+│   │   │   ├── BookCard.tsx
+│   │   │   ├── BookForm.tsx
+│   │   │   ├── LoanCard.tsx
+│   │   │   └── BookSearch.tsx
+│   │   │
+│   │   ├── attendance/                     # Attendance components
+│   │   │   ├── AttendanceCalendar.tsx
+│   │   │   ├── AttendanceChart.tsx
+│   │   │   └── AttendanceForm.tsx
+│   │   │
+│   │   ├── discipline/                     # Discipline components
+│   │   │   ├── RuleCard.tsx
+│   │   │   ├── RecordForm.tsx
+│   │   │   └── PointsDisplay.tsx
+│   │   │
+│   │   ├── virtual-pet/                    # Virtual Pet components
+│   │   │   ├── PetCard.tsx
+│   │   │   ├── PetStats.tsx
+│   │   │   └── PetLeaderboard.tsx
+│   │   │
+│   │   └── bullying/                       # Bullying components
+│   │       ├── ReportCard.tsx
+│   │       ├── ReportDetail.tsx
+│   │       └── HandleForm.tsx
+│   │
+│   ├── lib/                                # Utilities & helpers
+│   │   ├── api/                            # API functions
+│   │   │   ├── client.ts                   # Axios/fetch config
+│   │   │   ├── auth.ts
+│   │   │   ├── students.ts
+│   │   │   ├── teachers.ts
+│   │   │   ├── library.ts
+│   │   │   ├── attendance.ts
+│   │   │   ├── discipline.ts
+│   │   │   ├── virtual-pet.ts
+│   │   │   ├── bullying.ts
+│   │   │   └── notifications.ts
+│   │   │
+│   │   ├── hooks/                          # Custom React hooks
+│   │   │   ├── useAuth.ts
+│   │   │   ├── useStudents.ts
+│   │   │   ├── useBooks.ts
+│   │   │   ├── useAttendance.ts
+│   │   │   └── usePagination.ts
+│   │   │
+│   │   ├── utils/                          # Utility functions
+│   │   │   ├── format.ts                   # Date, number formatting
+│   │   │   ├── validation.ts               # Form validation
+│   │   │   ├── export.ts                   # Excel/PDF export
+│   │   │   ├── permissions.ts              # Check user permissions
+│   │   │   └── constants.ts                # App constants
+│   │   │
+│   │   └── schemas/                        # Zod validation schemas
+│   │       ├── student.schema.ts
+│   │       ├── book.schema.ts
+│   │       ├── attendance.schema.ts
+│   │       ├── discipline.schema.ts
+│   │       └── bullying.schema.ts
+│   │
+│   ├── types/                              # TypeScript types
+│   │   ├── index.ts
+│   │   ├── user.ts
+│   │   ├── student.ts
+│   │   ├── teacher.ts
+│   │   ├── class.ts
+│   │   ├── book.ts
+│   │   ├── attendance.ts
+│   │   ├── discipline.ts
+│   │   ├── virtual-pet.ts
+│   │   ├── bullying.ts
+│   │   └── notification.ts
+│   │
+│   ├── store/                              # State management (Zustand/Redux)
+│   │   ├── authStore.ts
+│   │   ├── uiStore.ts
+│   │   └── notificationStore.ts
+│   │
+│   └── middleware.ts                       # Next.js middleware (auth)
+│
+├── prisma/                                 # Prisma ORM (optional)
+│   ├── schema.prisma
+│   ├── migrations/
+│   └── seed.ts
+│
+├── .env.local                              # Environment variables
+├── .env.example
+├── .gitignore
+├── next.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+├── package.json
+└── README.md

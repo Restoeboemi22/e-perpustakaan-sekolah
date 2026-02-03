@@ -522,6 +522,28 @@
             }
         };
 
+        // Reset Device Binding
+        window.resetDevice = async (id, name) => {
+            if (confirm(`Apakah Anda yakin ingin mereset binding perangkat untuk siswa ${name}? Siswa akan bisa login di perangkat baru.`)) {
+                try {
+                    await updateDoc(doc(db, "students", id), {
+                        deviceId: null
+                    });
+                    
+                    // Show success toast
+                    const toast = new bootstrap.Toast(document.getElementById('toast'));
+                    document.getElementById('toastMessage').textContent = "Device binding berhasil direset!";
+                    toast.show();
+                    
+                    loadStudents(document.getElementById('searchInput').value, document.getElementById('filterClass').value);
+                } catch (error) {
+                    console.error("Error resetting device: ", error);
+                    alert("Gagal mereset device: " + error.message);
+                }
+            }
+        };
+
+        // Edit Student
         window.editStudent = (id, name, nisn, kelas) => {
             document.getElementById('studentId').value = id;
             document.getElementById('name').value = name;

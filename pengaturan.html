@@ -261,6 +261,54 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Integrasi Data Master -->
+                    <div class="col-lg-12">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title">Integrasi Master Data (BK & Kesiswaan)</h5>
+                                <button class="btn btn-sm btn-outline-primary" onclick="toggleEdit('masterDataForm', this)">
+                                    <i class="bi bi-pencil-square me-1"></i> Edit
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <form id="masterDataForm">
+                                    <div class="row align-items-center mb-4">
+                                        <div class="col-md-7">
+                                            <label class="form-label">Sumber Data Master (Dashboard BK)</label>
+                                            <input type="url" class="form-control" value="https://sc-app-bk-2025.web.app/dashboard" id="bkDashboardUrl" disabled>
+                                            <div class="form-text text-muted">URL dashboard aplikasi Bimbingan Konseling untuk sinkronisasi data siswa/wali kelas.</div>
+                                        </div>
+                                        <div class="col-md-5 text-end">
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <button type="button" class="btn btn-outline-success" onclick="downloadTemplate()" id="btnDownloadTemplate" disabled>
+                                                    <i class="bi bi-download me-2"></i>Template
+                                                </button>
+                                                <button type="button" class="btn btn-success" onclick="openImportModal()" id="btnImport" disabled>
+                                                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>Import Excel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                                        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                                        <div>
+                                            <strong>Status Integrasi:</strong> 
+                                            <span class="badge bg-warning text-dark ms-2" id="syncStatus">Belum Terhubung</span>
+                                            <p class="mb-0 mt-1 small">Data siswa dan guru akan disinkronkan agar bisa login ke aplikasi Lentera Digital menggunakan akun yang sama.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-end mt-3">
+                                        <button type="button" class="btn btn-primary d-none" onclick="saveIntegrationConfig()">
+                                            <i class="bi bi-save me-2"></i>Simpan Pengaturan
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -268,10 +316,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBvmr1cu8-WnGNiD5M_cla6lxr88QEYu28",
@@ -300,6 +349,7 @@
         // Load Settings
         async function loadSettings() {
             try {
+                // General Config
                 const docRef = doc(db, "settings", "general_config");
                 const docSnap = await getDoc(docRef);
 
@@ -317,6 +367,19 @@
                     if (data.maxBooks) document.getElementById('maxBooks').value = data.maxBooks;
                     if (data.lateFine) document.getElementById('lateFine').value = data.lateFine;
                 }
+
+                // Integration Config
+                const intDocRef = doc(db, "settings", "integration_config");
+                const intDocSnap = await getDoc(intDocRef);
+                if (intDocSnap.exists()) {
+                     const intData = intDocSnap.data();
+                     if (intData.bkDashboardUrl) document.getElementById('bkDashboardUrl').value = intData.bkDashboardUrl;
+                     if (intData.updatedAt) {
+                         document.getElementById('syncStatus').textContent = 'Terhubung';
+                         document.getElementById('syncStatus').className = 'badge bg-success ms-2';
+                     }
+                }
+
             } catch (error) {
                 console.error("Error loading settings:", error);
                 Swal.fire({
@@ -330,8 +393,8 @@
         // Toggle Edit Mode
         window.toggleEdit = function(formId, btn) {
             const form = document.getElementById(formId);
-            const inputs = form.querySelectorAll('input:not([readonly]), textarea');
-            const saveBtn = form.querySelector('button[type="button"]');
+            const inputs = form.querySelectorAll('input:not([readonly]), textarea, button.btn-success');
+            const saveBtn = form.querySelector('button.btn-primary');
             
             // Toggle Save Button visibility
             saveBtn.classList.toggle('d-none');
@@ -439,6 +502,180 @@
                 btn.disabled = false;
                 btn.innerHTML = originalContent;
             }
+        };
+
+        // Save Integration Config
+        window.saveIntegrationConfig = async function() {
+            const btn = event.target.closest('button');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
+
+            try {
+                const bkDashboardUrl = document.getElementById('bkDashboardUrl').value;
+
+                await setDoc(doc(db, "settings", "integration_config"), {
+                    bkDashboardUrl,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Pengaturan integrasi berhasil disimpan',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                // Return to Read-Only mode
+                const editBtn = document.getElementById('masterDataForm').closest('.card').querySelector('.card-header button');
+                toggleEdit('masterDataForm', editBtn);
+
+            } catch (error) {
+                console.error("Error saving integration config:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Gagal menyimpan pengaturan: ' + error.message
+                });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        };
+
+        // Download Template
+        window.downloadTemplate = function() {
+            // Define headers and example data
+            const headers = ["Nama Lengkap", "Role (Siswa/Guru)", "NIS/NIP", "Kelas", "Username", "Password", "Email", "Jenis Kelamin (L/P)"];
+            const exampleData = [
+                ["Budi Santoso", "Siswa", "12345", "9A", "budi123", "rahasia123", "budi@student.smpn3pacet.sch.id", "L"],
+                ["Siti Aminah", "Guru", "19800101", "", "siti.guru", "guru123", "siti@teacher.smpn3pacet.sch.id", "P"]
+            ];
+
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
+            const wsData = [headers, ...exampleData];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Template Data Master");
+
+            // Save file
+            XLSX.writeFile(wb, "Template_Data_Master_Lentera.xlsx");
+        };
+
+        // Import Logic
+        window.openImportModal = function() {
+            Swal.fire({
+                title: 'Import Data Master',
+                html: `
+                    <p class="text-muted small">Silakan upload file Excel yang sudah diisi sesuai template.</p>
+                    <ul class="text-start small text-muted mb-3">
+                        <li>Pastikan format kolom sesuai template</li>
+                        <li>Username & NIS/NIP harus unik</li>
+                        <li>Password minimal 6 karakter</li>
+                    </ul>
+                `,
+                input: 'file',
+                inputAttributes: {
+                    'accept': '.xlsx, .xls',
+                    'aria-label': 'Upload Excel file'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Upload & Sinkron',
+                cancelButtonText: 'Batal',
+                showLoaderOnConfirm: true,
+                preConfirm: (file) => {
+                    if (!file) {
+                        Swal.showValidationMessage('File harus dipilih!');
+                        return;
+                    }
+                    
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const data = new Uint8Array(e.target.result);
+                                const workbook = XLSX.read(data, {type: 'array'});
+                                const firstSheetName = workbook.SheetNames[0];
+                                const worksheet = workbook.Sheets[firstSheetName];
+                                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                                
+                                if (jsonData.length === 0) {
+                                    reject("File Excel kosong atau format salah.");
+                                    return;
+                                }
+
+                                resolve(jsonData);
+                            } catch (error) {
+                                reject("Gagal membaca file Excel: " + error.message);
+                            }
+                        };
+                        reader.readAsArrayBuffer(file);
+                    }).then(async (jsonData) => {
+                        // Process Data to Firestore
+                        try {
+                            const batch = writeBatch(db);
+                            let processedCount = 0;
+
+                            for (const row of jsonData) {
+                                // Basic validation & mapping
+                                const name = row["Nama Lengkap"];
+                                const role = (row["Role (Siswa/Guru)"] || "").toLowerCase();
+                                const username = row["Username"];
+                                
+                                if (!name || !username) continue;
+
+                                const userRole = role.includes("guru") ? "teacher" : "student";
+                                const docId = username.replace(/[^a-zA-Z0-9]/g, "_"); // Simple sanitize
+                                
+                                const userRef = doc(db, "students", docId); // Using 'students' collection for all for now or split based on role
+                                // Note: In previous context, we saw 'students' collection used for sync.
+                                // Ideally we should differentiate, but for sync to Android, it reads 'students'.
+                                // Let's stick to 'students' collection but add 'role' field.
+                                
+                                batch.set(userRef, {
+                                    name: name,
+                                    username: username,
+                                    password: row["Password"] || "123456",
+                                    nisn: row["NIS/NIP"] ? String(row["NIS/NIP"]) : "",
+                                    role: userRole.toUpperCase(), // STUDENT or TEACHER
+                                    classId: row["Kelas"] || null, // Store string class for now
+                                    email: row["Email"] || "",
+                                    gender: (row["Jenis Kelamin (L/P)"] || "L") === "P" ? "FEMALE" : "MALE",
+                                    deviceId: null, // Reset device binding on new import
+                                    updatedAt: new Date().toISOString()
+                                }, { merge: true });
+                                
+                                processedCount++;
+                            }
+
+                            await batch.commit();
+                            return processedCount;
+
+                        } catch (error) {
+                            throw new Error("Gagal menyimpan ke database: " + error.message);
+                        }
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sinkronisasi Berhasil',
+                        text: `Berhasil mengimpor ${result.value} data siswa/guru.`
+                    });
+                    document.getElementById('syncStatus').className = 'badge bg-success ms-2';
+                    document.getElementById('syncStatus').textContent = 'Terhubung (Baru saja)';
+                }
+            }).catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: error.message || 'Terjadi kesalahan saat import.'
+                });
+            });
         };
 
         // Initialize
